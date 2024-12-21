@@ -4,7 +4,9 @@ import com.phithang.mysocialnetwork.entity.FriendshipEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 
 public interface IFriendshipService {
-    FriendshipEntity save(FriendshipEntity friendshipEntity);
+    FriendshipEntity save(UserEntity sender, UserEntity receiver);
+
+    boolean accept(UserEntity sender, UserEntity receiver);
 
     FriendshipEntity findBySenderAndReceiver(UserEntity sender, UserEntity receiver);
 

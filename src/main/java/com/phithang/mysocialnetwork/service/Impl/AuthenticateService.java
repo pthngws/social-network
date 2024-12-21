@@ -6,10 +6,17 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.phithang.mysocialnetwork.dto.IntrospectDto;
+import com.phithang.mysocialnetwork.dto.LoginDto;
+import com.phithang.mysocialnetwork.dto.SignupDto;
+import com.phithang.mysocialnetwork.dto.UserDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
+import com.phithang.mysocialnetwork.service.IUserService;
 import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -23,6 +30,11 @@ public class AuthenticateService implements IAuthenticateService {
     @NonFinal
     @Value("${jwt.secret}")
     protected String SECRET;
+
+    @Autowired
+    private IUserService userService;
+
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public String introspectToken(IntrospectDto token) throws JOSEException, ParseException {
@@ -53,4 +65,28 @@ public class AuthenticateService implements IAuthenticateService {
         return jwsObject.serialize();
     }
 
+    @Override
+    public UserDto login(LoginDto loginDto) throws JOSEException {
+        UserEntity userEntity = userService.findUserByEmail(loginDto.getEmail());
+        if (userEntity != null) {
+            if (passwordEncoder.matches(loginDto.getPassword(), userEntity.getPassword())) {
+                String token = this.generateToken(userEntity);
+                UserDto userDto = new UserDto(userEntity);
+                userDto.setToken(token);
+                return userDto;
+            }
+
+        }
+        return null;
+    }
+
+    @Override
+    public boolean saveUser(SignupDto signupDto) {
+        UserEntity userEntity = new UserEntity();
+        userEntity = signupDto.toUserEntity();
+        userEntity.setRole("CLIENT");
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        userService.saveUser(userEntity);
+        return true;
+    }
 }

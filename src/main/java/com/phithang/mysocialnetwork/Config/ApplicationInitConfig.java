@@ -18,11 +18,11 @@ public class ApplicationInitConfig {
     @Bean
     ApplicationRunner init(UserRepository userRepository){
         return args -> {
-            if(userRepository.findByEmail("admin")==null)
+            if(userRepository.findByEmail("admin@admin")==null)
             {
                 UserEntity userDto = new UserEntity();
-                userDto.setEmail("admin");
-                userDto.setPassword(passwordEncoder.encode("1"));
+                userDto.setEmail("admin@admin");
+                userDto.setPassword(passwordEncoder.encode("admin@admin"));
                 userDto.setRole("ADMIN");
                 userRepository.save(userDto);
                 log.warn("Admin created");

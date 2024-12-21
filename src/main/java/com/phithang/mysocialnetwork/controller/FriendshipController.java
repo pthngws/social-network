@@ -29,7 +29,6 @@ public class FriendshipController {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             UserEntity sender = userService.findUserByEmail(authentication.getName());
             UserEntity receiver = userService.findById(receiverId.getReceiverId());
-
             if (sender == null || receiver == null) {
                 return new ResponseDto(400, "Sender or Receiver not found!", null);
             }
@@ -42,13 +41,7 @@ public class FriendshipController {
             if (friendshipEntity != null) {
                 return new ResponseDto(400, "Friendship already exists!", null);
             }
-
-            friendshipEntity = new FriendshipEntity();
-            friendshipEntity.setUser1(sender);
-            friendshipEntity.setUser2(receiver);
-            friendshipEntity.setStatus("PENDING");
-            friendshipEntity.setRequestTimestamp(LocalDateTime.now());
-            friendshipService.save(friendshipEntity);
+            friendshipService.save(sender,receiver);
 
             return new ResponseDto(200, "Friend request sent successfully!", null);
         } catch (Exception e) {
@@ -76,8 +69,7 @@ public class FriendshipController {
             if (friendshipEntity == null) {
                 return new ResponseDto(400, "Friend request not found!", null);
             }
-            friendshipEntity.setStatus("ACCEPTED");
-            friendshipService.save(friendshipEntity);
+            friendshipService.accept(sender,receiver);
 
             return new ResponseDto(200, "Friend request accepted successfully!", null);
         } catch (Exception e) {

@@ -8,6 +8,8 @@ import com.phithang.mysocialnetwork.service.IFriendshipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class FriendshipService implements IFriendshipService {
 
@@ -15,9 +17,23 @@ public class FriendshipService implements IFriendshipService {
     private FriendshipRepository friendshipRepository;
 
     @Override
-    public FriendshipEntity save(FriendshipEntity friendshipEntity)
+    public FriendshipEntity save(UserEntity sender, UserEntity receiver)
     {
+        FriendshipEntity friendshipEntity = new FriendshipEntity();
+        friendshipEntity.setUser1(sender);
+        friendshipEntity.setUser2(receiver);
+        friendshipEntity.setStatus("PENDING");
+        friendshipEntity.setRequestTimestamp(LocalDateTime.now());
         return friendshipRepository.save(friendshipEntity);
+    }
+
+    @Override
+    public boolean accept(UserEntity sender, UserEntity receiver)
+    {
+        FriendshipEntity friendshipEntity = friendshipRepository.findByUser1AndUser2(sender, receiver);
+        friendshipEntity.setStatus("ACCEPTED");
+        friendshipEntity.setRequestTimestamp(LocalDateTime.now());
+        return friendshipRepository.save(friendshipEntity) != null;
     }
 
     @Override

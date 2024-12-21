@@ -1,10 +1,12 @@
 package com.phithang.mysocialnetwork.service.Impl;
 
 import com.phithang.mysocialnetwork.dto.PasswordDto;
+import com.phithang.mysocialnetwork.dto.UpdateProfileDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,8 +36,10 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public boolean updatePassword(String email, PasswordDto passwordDto)
+    public boolean updatePassword(PasswordDto passwordDto)
     {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         UserEntity userEntity = userRepository.findByEmail(email);
         if(userEntity!=null)
         {
@@ -45,6 +49,21 @@ public class UserService implements IUserService {
                 userRepository.save(userEntity);
                 return true;
             }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateProfile(UpdateProfileDto updateProfileDto)
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if(userEntity!=null) {
+            userEntity.setLastname(updateProfileDto.getLastName());
+            userEntity.setFirstname(updateProfileDto.getFirstName());
+            userRepository.save(userEntity);
+            return true;
         }
         return false;
     }

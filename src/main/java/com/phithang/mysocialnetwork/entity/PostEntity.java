@@ -2,9 +2,11 @@ package com.phithang.mysocialnetwork.entity;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
+@Data
 @Entity
 @Table(name = "posts")
 public class PostEntity {
@@ -22,6 +24,10 @@ public class PostEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentEntity> comments;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostMediaEntity> postMedia;
+
+
     @ManyToMany
     @JoinTable(
             name = "post_likes",
@@ -31,4 +37,18 @@ public class PostEntity {
     private List<UserEntity> likedBy;
 
     private java.time.LocalDateTime timestamp;
+
+    @Override
+    public String toString() {
+        return "PostEntity{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", authorId=" + (author != null ? author.getId() : "null") +
+                ", commentCount=" + (comments != null ? comments.size() : 0) +
+                ", mediaCount=" + (postMedia != null ? postMedia.size() : 0) +
+                ", likedByCount=" + (likedBy != null ? likedBy.size() : 0) +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+
 }

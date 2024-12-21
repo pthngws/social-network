@@ -27,80 +27,41 @@ public class AuthenticateController {
     @Autowired
     private IAuthenticateService authenticateService;
 
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     @PostMapping("/login")
     public ResponseDto<UserDto> login(@RequestBody LoginDto loginRequest) throws JOSEException {
-        ResponseDto responseDto = new ResponseDto();
-
-        UserEntity userEntity = userService.findUserByEmail(loginRequest.getEmail());
-        if (userEntity != null) {
-            if (passwordEncoder.matches(loginRequest.getPassword(), userEntity.getPassword())) {
-                String token = authenticateService.generateToken(userEntity);
-                UserDto userDto = new UserDto(userEntity);
-                userDto.setToken(token);
-                responseDto.setStatus(200);
-                responseDto.setMessage("Login Successful!");
-                responseDto.setData(userDto);
-            } else {
-                responseDto.setStatus(400);
-                responseDto.setMessage("Password is incorrect");
-                responseDto.setData(null);
-            }
-        } else {
-            responseDto.setStatus(400);
-            responseDto.setMessage("Email not found");
-            responseDto.setData(null);
+        UserDto userDto = authenticateService.login(loginRequest);
+        if (userDto!=null) {
+            return new ResponseDto<>(200,userDto,"Login successful");
         }
-        return responseDto;
+        return new ResponseDto<>(400,null,"Invalid username or password");
     }
 
     @PostMapping("/introspect")
     public ResponseDto<UserDto> introspect(@RequestBody IntrospectDto token) throws JOSEException, ParseException {
-        ResponseDto responseDto = new ResponseDto();
         String email = authenticateService.introspectToken(token);
         if (email != null) {
-            UserEntity userEntity = userService.findUserByEmail(email);
-            UserDto userDto = new UserDto(userEntity);
-            responseDto.setStatus(200);
-            responseDto.setMessage("Introspect Successful!");
-            responseDto.setData(userDto);
-        } else {
-            responseDto.setStatus(400);
-            responseDto.setMessage("Token is invalid");
-            responseDto.setData(null);
+           return new ResponseDto<>(200,null,"Introspect successful");
         }
-        return responseDto;
+        return new ResponseDto<>(400,null,"Invalid token");
     }
-
-
 
     @PostMapping("/signup")
     public ResponseDto<UserDto> signup(@RequestBody SignupDto signupDto) {
-        ResponseDto responseDto = new ResponseDto();
         UserEntity userEntity = userService.findUserByEmail(signupDto.getEmail());
         if (userEntity != null) {
-            responseDto.setStatus(400);
-            responseDto.setMessage("Email already exists!");
-            responseDto.setData(null);
-        } else {
-            userEntity = signupDto.toUserEntity();
-            userEntity.setRole("CLIENT");
-            userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-            userService.saveUser(userEntity);
-            responseDto.setStatus(200);
-            responseDto.setMessage("Signup Successful!");
-            responseDto.setData(signupDto);
+            return new ResponseDto<>(400,null,"Email already in use");
         }
-        return responseDto;
+        if(authenticateService.saveUser(signupDto)) {
+            return new ResponseDto<>(200, null, "Signup successful");
+        }
+        return new ResponseDto<>(400,null,"Invalid email or password");
+
     }
 
     @PostMapping("/updatepassword")
     public ResponseEntity<String> changepassword(@RequestBody PasswordDto passwordDto)
     {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        if(userService.updatePassword(email,passwordDto))
+        if(userService.updatePassword(passwordDto))
         {
             return ResponseEntity.ok("Update password successful!");
         }
