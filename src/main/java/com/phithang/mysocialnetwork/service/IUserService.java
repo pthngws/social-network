@@ -11,4 +11,6 @@ public interface IUserService {
     public UserEntity saveUser(UserEntity user);
 
     boolean updatePassword(String email, PasswordDto passwordDto);
+
+    UserEntity findById(Long id);
 }

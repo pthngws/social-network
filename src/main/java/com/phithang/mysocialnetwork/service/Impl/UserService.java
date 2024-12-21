@@ -30,8 +30,6 @@ public class UserService implements IUserService {
 
     @Override
     public UserEntity saveUser(UserEntity user) {
-        user.setRole("CLIENT");
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -49,5 +47,11 @@ public class UserService implements IUserService {
             }
         }
         return false;
+    }
+
+    @Override
+    public UserEntity findById(Long id)
+    {
+        return userRepository.findById(id).orElse(null);
     }
 }

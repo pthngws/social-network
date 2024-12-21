@@ -23,4 +23,11 @@ public class UserDto {
         this.email = userEntity.getEmail();
         this.role = userEntity.getRole();
     }
+    public UserEntity toUserEntity(UserEntity userEntity) {
+        userEntity.setFirstname(firstname);
+        userEntity.setLastname(lastname);
+        userEntity.setEmail(email);
+        userEntity.setRole(role);
+        return userEntity;
+    }
 }

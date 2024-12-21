@@ -19,7 +19,7 @@ public class FriendshipEntity {
     @JoinColumn(name = "user2_id", nullable = false)
     private UserEntity user2;
 
-    private String status; // "PENDING", "ACCEPTED", "REJECTED"
+    private String status; // "PENDING", "ACCEPTED"
 
     private java.time.LocalDateTime requestTimestamp;
 }

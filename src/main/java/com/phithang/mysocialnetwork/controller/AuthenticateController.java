@@ -84,7 +84,10 @@ public class AuthenticateController {
             responseDto.setMessage("Email already exists!");
             responseDto.setData(null);
         } else {
-            userService.saveUser(signupDto.toUserEntity());
+            userEntity = signupDto.toUserEntity();
+            userEntity.setRole("CLIENT");
+            userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+            userService.saveUser(userEntity);
             responseDto.setStatus(200);
             responseDto.setMessage("Signup Successful!");
             responseDto.setData(signupDto);
