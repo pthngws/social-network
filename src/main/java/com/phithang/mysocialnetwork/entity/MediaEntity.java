@@ -1,7 +1,9 @@
 package com.phithang.mysocialnetwork.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "medias")
 public class MediaEntity {

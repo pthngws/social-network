@@ -27,7 +27,6 @@ public class PostEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostMediaEntity> postMedia;
 
-
     @ManyToMany
     @JoinTable(
             name = "post_likes",
@@ -45,7 +44,6 @@ public class PostEntity {
                 ", content='" + content + '\'' +
                 ", authorId=" + (author != null ? author.getId() : "null") +
                 ", commentCount=" + (comments != null ? comments.size() : 0) +
-                ", mediaCount=" + (postMedia != null ? postMedia.size() : 0) +
                 ", likedByCount=" + (likedBy != null ? likedBy.size() : 0) +
                 ", timestamp=" + timestamp +
                 '}';
