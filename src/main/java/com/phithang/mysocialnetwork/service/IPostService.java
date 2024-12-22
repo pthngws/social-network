@@ -1,7 +1,9 @@
 package com.phithang.mysocialnetwork.service;
 
+import com.phithang.mysocialnetwork.dto.CommentDto;
 import com.phithang.mysocialnetwork.dto.PostDto;
 import com.phithang.mysocialnetwork.dto.PostUpdateDto;
+import com.phithang.mysocialnetwork.entity.CommentEntity;
 import com.phithang.mysocialnetwork.entity.PostEntity;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,4 +18,6 @@ public interface IPostService {
     boolean deletePost(Long id);
 
     boolean likePost(Long id);
+
+    boolean commentPost(Long id, CommentDto commentDto);
 }

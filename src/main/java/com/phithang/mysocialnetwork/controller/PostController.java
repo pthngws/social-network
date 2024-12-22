@@ -1,5 +1,6 @@
 package com.phithang.mysocialnetwork.controller;
 
+import com.phithang.mysocialnetwork.dto.CommentDto;
 import com.phithang.mysocialnetwork.dto.PostDto;
 import com.phithang.mysocialnetwork.dto.PostUpdateDto;
 import com.phithang.mysocialnetwork.dto.ResponseDto;
@@ -54,6 +55,16 @@ public class PostController {
         }
         return ResponseEntity.badRequest().body("Like failed!");
     }
+
+    @PostMapping("/comment/{id}")
+    public ResponseEntity<String> comment(@PathVariable Long id, @RequestBody CommentDto commentDto)
+        {
+        if(postService.commentPost(id,commentDto))
+        {
+            return ResponseEntity.ok("Comment successful!");
+        }
+        return ResponseEntity.badRequest().body("Comment failed!");
+        }
 
 
 }

@@ -3,6 +3,7 @@ package com.phithang.mysocialnetwork.service.Impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.phithang.mysocialnetwork.dto.CommentDto;
 import com.phithang.mysocialnetwork.dto.MediaDto;
 import com.phithang.mysocialnetwork.dto.PostDto;
 import com.phithang.mysocialnetwork.dto.PostUpdateDto;
@@ -145,6 +146,27 @@ public class PostService implements IPostService {
                 postEntity.getLikedBy().remove(userEntity);
                 postRepository.save(postEntity);
             }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean commentPost(Long id, CommentDto commentDto)
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserEntity userEntity = userService.findUserByEmail(email);
+        PostEntity postEntity = postRepository.findById(id).orElse(null);
+        if(postEntity!=null && userEntity!=null)
+        {
+            CommentEntity commentEntity = new CommentEntity();
+            commentEntity.setPost(postEntity);
+            commentEntity.setAuthor(userEntity);
+            commentEntity.setTimestamp(LocalDateTime.now());
+            commentEntity.setContent(commentDto.getContent());
+            postEntity.getComments().add(commentEntity);
+            postRepository.save(postEntity);
             return true;
         }
         return false;
