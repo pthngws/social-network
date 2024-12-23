@@ -5,10 +5,11 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.phithang.mysocialnetwork.dto.CommentDto;
 import com.phithang.mysocialnetwork.dto.MediaDto;
-import com.phithang.mysocialnetwork.dto.PostDto;
-import com.phithang.mysocialnetwork.dto.PostUpdateDto;
+import com.phithang.mysocialnetwork.dto.request.PostRequestDto;
+import com.phithang.mysocialnetwork.dto.request.PostUpdateDto;
 import com.phithang.mysocialnetwork.entity.*;
 import com.phithang.mysocialnetwork.repository.MediaRepository;
+import com.phithang.mysocialnetwork.repository.NotificationRepository;
 import com.phithang.mysocialnetwork.repository.PostMediaRepository;
 import com.phithang.mysocialnetwork.repository.PostRepository;
 import com.phithang.mysocialnetwork.service.IPostService;
@@ -40,11 +41,14 @@ public class PostService implements IPostService {
     private PostMediaRepository postMediaRepository;
 
     @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
     private Cloudinary cloudinary;
 
     @Transactional
     @Override
-    public PostEntity createPost(PostDto postRequestDto) throws IOException {
+    public PostEntity createPost(PostRequestDto postRequestDto) throws IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity author = userService.findUserByEmail(authentication.getName());
 
@@ -139,6 +143,14 @@ public class PostService implements IPostService {
             if(!postEntity.getLikedBy().contains(userEntity))
             {
                 postEntity.getLikedBy().add(userEntity);
+                if (!email.trim().equals(postEntity.getAuthor().getEmail().trim())) {
+                    NotificationEntity notificationEntity = new NotificationEntity();
+                    notificationEntity.setUser(postEntity.getAuthor());
+                    notificationEntity.setIsread(0);
+                    notificationEntity.setTimestamp(LocalDateTime.now());
+                    notificationEntity.setContent(userEntity.getEmail() + " liked your post");
+                    notificationRepository.save(notificationEntity);
+                }
                 postRepository.save(postEntity);
             }
             else
@@ -166,9 +178,24 @@ public class PostService implements IPostService {
             commentEntity.setTimestamp(LocalDateTime.now());
             commentEntity.setContent(commentDto.getContent());
             postEntity.getComments().add(commentEntity);
+            if(!email.trim().equals(postEntity.getAuthor().getEmail().trim()))
+            {
+                NotificationEntity notificationEntity = new NotificationEntity();
+                notificationEntity.setUser(postEntity.getAuthor());
+                notificationEntity.setIsread(0);
+                notificationEntity.setTimestamp(LocalDateTime.now());
+                notificationEntity.setContent(userEntity.getEmail() + "commented your post");
+                notificationRepository.save(notificationEntity);
+            }
             postRepository.save(postEntity);
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<PostEntity> getAllPost()
+    {
+        return postRepository.findAll();
     }
 }

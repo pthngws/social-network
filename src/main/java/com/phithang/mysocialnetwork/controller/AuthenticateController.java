@@ -3,14 +3,16 @@ package com.phithang.mysocialnetwork.controller;
 
 import com.nimbusds.jose.JOSEException;
 import com.phithang.mysocialnetwork.dto.*;
+import com.phithang.mysocialnetwork.dto.request.IntrospectDto;
+import com.phithang.mysocialnetwork.dto.request.LoginRequestDto;
+import com.phithang.mysocialnetwork.dto.request.PasswordDto;
+import com.phithang.mysocialnetwork.dto.request.SignupDto;
+import com.phithang.mysocialnetwork.dto.response.ResponseDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
 import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +30,7 @@ public class AuthenticateController {
     private IAuthenticateService authenticateService;
 
     @PostMapping("/login")
-    public ResponseDto<UserDto> login(@RequestBody LoginDto loginRequest) throws JOSEException {
+    public ResponseDto<UserDto> login(@RequestBody LoginRequestDto loginRequest) throws JOSEException {
         UserDto userDto = authenticateService.login(loginRequest);
         if (userDto!=null) {
             return new ResponseDto<>(200,userDto,"Login successful");
@@ -40,7 +42,7 @@ public class AuthenticateController {
     public ResponseDto<UserDto> introspect(@RequestBody IntrospectDto token) throws JOSEException, ParseException {
         String email = authenticateService.introspectToken(token);
         if (email != null) {
-           return new ResponseDto<>(200,null,"Introspect successful");
+            return new ResponseDto<>(200,null,"Introspect successful");
         }
         return new ResponseDto<>(400,null,"Invalid token");
     }

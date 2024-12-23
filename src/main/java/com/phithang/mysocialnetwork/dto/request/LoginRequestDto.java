@@ -1,9 +1,9 @@
-package com.phithang.mysocialnetwork.dto;
+package com.phithang.mysocialnetwork.dto.request;
 
 import lombok.Data;
 
 @Data
-public class LoginDto {
+public class LoginRequestDto {
     private String email;
     private String password;
 }

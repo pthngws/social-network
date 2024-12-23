@@ -1,7 +1,7 @@
 package com.phithang.mysocialnetwork.service.Impl;
 
-import com.phithang.mysocialnetwork.dto.PasswordDto;
-import com.phithang.mysocialnetwork.dto.UpdateProfileDto;
+import com.phithang.mysocialnetwork.dto.request.PasswordDto;
+import com.phithang.mysocialnetwork.dto.request.UpdateProfileDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IUserService;
@@ -62,7 +62,12 @@ public class UserService implements IUserService {
         if(userEntity!=null) {
             userEntity.setLastname(updateProfileDto.getLastName());
             userEntity.setFirstname(updateProfileDto.getFirstName());
+            userEntity.setAbout(updateProfileDto.getAbout());
+            userEntity.setBirthday(updateProfileDto.getBirthday());
+            userEntity.setImageUrl(updateProfileDto.getAvatar());
+            userEntity.setGender(updateProfileDto.getGender());
             userRepository.save(userEntity);
+
             return true;
         }
         return false;

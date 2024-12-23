@@ -1,5 +1,6 @@
 package com.phithang.mysocialnetwork.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,10 +14,12 @@ public class FriendshipEntity {
 
     @ManyToOne
     @JoinColumn(name = "user1_id", nullable = false)
+    @JsonIgnore
     private UserEntity user1;
 
     @ManyToOne
     @JoinColumn(name = "user2_id", nullable = false)
+    @JsonIgnore
     private UserEntity user2;
 
     private String status; // "PENDING", "ACCEPTED"

@@ -5,9 +5,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.phithang.mysocialnetwork.dto.IntrospectDto;
-import com.phithang.mysocialnetwork.dto.LoginDto;
-import com.phithang.mysocialnetwork.dto.SignupDto;
+import com.phithang.mysocialnetwork.dto.request.IntrospectDto;
+import com.phithang.mysocialnetwork.dto.request.LoginRequestDto;
+import com.phithang.mysocialnetwork.dto.request.SignupDto;
 import com.phithang.mysocialnetwork.dto.UserDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
@@ -66,10 +66,10 @@ public class AuthenticateService implements IAuthenticateService {
     }
 
     @Override
-    public UserDto login(LoginDto loginDto) throws JOSEException {
-        UserEntity userEntity = userService.findUserByEmail(loginDto.getEmail());
+    public UserDto login(LoginRequestDto loginRequestDto) throws JOSEException {
+        UserEntity userEntity = userService.findUserByEmail(loginRequestDto.getEmail());
         if (userEntity != null) {
-            if (passwordEncoder.matches(loginDto.getPassword(), userEntity.getPassword())) {
+            if (passwordEncoder.matches(loginRequestDto.getPassword(), userEntity.getPassword())) {
                 String token = this.generateToken(userEntity);
                 UserDto userDto = new UserDto(userEntity);
                 userDto.setToken(token);

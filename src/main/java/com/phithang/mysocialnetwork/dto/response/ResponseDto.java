@@ -1,4 +1,4 @@
-package com.phithang.mysocialnetwork.dto;
+package com.phithang.mysocialnetwork.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.phithang.mysocialnetwork.dto;
+package com.phithang.mysocialnetwork.dto.request;
 
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import lombok.Data;

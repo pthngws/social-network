@@ -1,19 +1,18 @@
 package com.phithang.mysocialnetwork.controller;
 
 import com.phithang.mysocialnetwork.dto.FriendshipDto;
-import com.phithang.mysocialnetwork.dto.ResponseDto;
+import com.phithang.mysocialnetwork.dto.request.FriendshipRequestDto;
+import com.phithang.mysocialnetwork.dto.response.ResponseDto;
 import com.phithang.mysocialnetwork.entity.FriendshipEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IFriendshipService;
 import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/friendship")
@@ -23,8 +22,18 @@ public class FriendshipController {
     @Autowired
     private IFriendshipService friendshipService;
 
+    @GetMapping("/requests")
+    public ResponseDto<List<FriendshipDto>> getFriendshipRequests() {
+        List<FriendshipEntity> friendshipEntities= friendshipService.findALlRequest();
+        List<FriendshipDto> friendshipDtos = new ArrayList<>();
+        for(FriendshipEntity friendshipEntity:friendshipEntities) {
+            friendshipDtos.add(new FriendshipDto(friendshipEntity));
+        }
+        return new ResponseDto<>(200,friendshipDtos,"Success");
+    }
+
     @PostMapping("/add")
-    public ResponseDto addFriendship(@RequestBody FriendshipDto receiverId) {
+    public ResponseDto addFriendship(@RequestBody FriendshipRequestDto receiverId) {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             UserEntity sender = userService.findUserByEmail(authentication.getName());
@@ -50,7 +59,7 @@ public class FriendshipController {
     }
 
     @PostMapping("/accept")
-    public ResponseDto acceptFriendship(@RequestBody FriendshipDto friendshipDto) {
+    public ResponseDto acceptFriendship(@RequestBody FriendshipRequestDto friendshipDto) {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             String receiverEmail = authentication.getName();
@@ -78,7 +87,7 @@ public class FriendshipController {
     }
 
     @PostMapping("/cancel")
-    public ResponseDto cancelFriendship(@RequestBody FriendshipDto friendshipDto) {
+    public ResponseDto cancelFriendship(@RequestBody FriendshipRequestDto friendshipDto) {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             String receiverEmail = authentication.getName();

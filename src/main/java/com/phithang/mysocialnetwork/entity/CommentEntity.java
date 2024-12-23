@@ -1,5 +1,6 @@
 package com.phithang.mysocialnetwork.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,10 +17,12 @@ public class CommentEntity {
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
+    @JsonIgnore
     private UserEntity author;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnore
     private PostEntity post;
 
     private java.time.LocalDateTime timestamp;
