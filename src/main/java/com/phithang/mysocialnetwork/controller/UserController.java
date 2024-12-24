@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -42,6 +44,8 @@ public class UserController {
         List<UserEntity> users = userService.findByFirstnameOrLastnameContaining(name);
         List<UpdateProfileDto> userDtos = new ArrayList<>();
         for (UserEntity userEntity : users) {
+            if(userEntity.getBirthday() == null)
+                userEntity.setBirthday(new Date());
             userDtos.add(new UpdateProfileDto(userEntity));
         }
         return new ResponseDto<>(200,userDtos,"Search users successful!");
@@ -67,10 +71,13 @@ public class UserController {
     }
 
     @PutMapping("/profile/update")
-    public ResponseDto<UpdateProfileDto> updateProfile(@RequestBody UpdateProfileDto updateProfileDto) {
-        if(userService.updateProfile(updateProfileDto)) {
-            return new ResponseDto<>(200,updateProfileDto,"Update profile successful!");
+    public ResponseDto<UpdateProfileDto> updateProfile(
+            @ModelAttribute UpdateProfileDto updateProfileDto,
+            @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile) {
+        if (userService.updateProfile(updateProfileDto, avatarFile)) {
+            return new ResponseDto<>(200, updateProfileDto, "Update profile successful!");
         }
-        return new ResponseDto<>(400,null,"Update profile failed!");
+        return new ResponseDto<>(400, null, "Update profile failed!");
     }
+
 }

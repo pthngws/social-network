@@ -61,7 +61,7 @@ public class PostService implements IPostService {
 
         List<MediaEntity> mediaEntities = new ArrayList<>();
         for (MediaDto file : postRequestDto.getMedia()) {
-            var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap());
+            var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap()); // Upload base64 string
             String mediaUrl = uploadResult.get("secure_url").toString();
             String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
             MediaEntity mediaEntity = new MediaEntity();
@@ -69,6 +69,8 @@ public class PostService implements IPostService {
             mediaEntity.setType(mediaType);
             mediaEntities.add(mediaEntity);
         }
+
+        // Lưu media
         for (MediaEntity media : mediaEntities) {
             media = mediaRepository.save(media);
 
@@ -77,8 +79,10 @@ public class PostService implements IPostService {
             postMedia.setMedia(media);
             postMediaRepository.save(postMedia);
         }
+
         return postEntity;
     }
+
 
     @Transactional
     @Override

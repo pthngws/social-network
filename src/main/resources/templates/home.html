@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
+<div layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - My Social Network</title>
+    <link href="css/home.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4 custom-container">
+        <!-- Create Post Box -->
+        <div class="post-box">
+            <div class="d-flex align-items-center">
+                <img id="avatar-mini" src="" height="40px" alt="User" class="me-2">
+                <input type="text" class="form-control" placeholder="Bạn đang nghĩ gi?" data-bs-toggle="modal" data-bs-target="#createPostModal">
+            </div>
+        </div>
+
+        <!-- Post Example -->
+        <div class="post-container">
+            <!-- Posts will be injected here dynamically -->
+        </div>
+    </div>
+
+<!-- Create Post Modal -->
+<div class="modal fade " id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog custom-modal ">
+        <div class="modal-content mt-10">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control mb-3" id="postContent" rows="4" placeholder="Bạn đang nghĩ gì?"></textarea>
+
+                <!-- Media upload container -->
+                <div id="mediaUploadContainer" class="media-upload-container">
+                    <label for="postMedia" class="media-placeholder">
+                        <i class="bi bi-camera"></i>
+                        <span>Thêm ảnh/video</span>
+                    </label>
+                    <input class="form-control d-none" type="file" id="postMedia" accept="image/*,video/*" multiple>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="postSubmitBtn">Post</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/js/home.js" ></script>
+</body>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</div>
+
+</html>

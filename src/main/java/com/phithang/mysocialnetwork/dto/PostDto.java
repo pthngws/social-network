@@ -1,6 +1,7 @@
 package com.phithang.mysocialnetwork.dto;
 
 import com.phithang.mysocialnetwork.entity.PostEntity;
+import com.phithang.mysocialnetwork.entity.PostMediaEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class PostDto {
     private int commentCount;
     private int likedByCount;
     private boolean liked;
+    private List<PostMediaEntity> media;
     private java.time.LocalDateTime timestamp;
 
     public PostDto toPostDto(PostEntity postEntity)
@@ -27,6 +29,7 @@ public class PostDto {
         postDto.setTimestamp(postEntity.getTimestamp());
         postDto.setCommentCount(postEntity.getComments().size());
         postDto.setLikedByCount(postEntity.getLikedBy().size());
+        postDto.setMedia(postEntity.getPostMedia());
         return postDto;
     }
 

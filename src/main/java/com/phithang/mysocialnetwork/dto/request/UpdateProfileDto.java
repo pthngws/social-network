@@ -2,8 +2,12 @@ package com.phithang.mysocialnetwork.dto.request;
 
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.Locale;
 
 @Data
 public class UpdateProfileDto {
@@ -12,7 +16,7 @@ public class UpdateProfileDto {
     private String lastName;
     private String about;
     private String avatar;
-    private Date birthday;
+    private LocalDate birthday;
     private String gender;
 
     public UpdateProfileDto() {
@@ -23,7 +27,10 @@ public class UpdateProfileDto {
         this.lastName = userEntity.getLastname();
         this.about = userEntity.getAbout();
         this.avatar = userEntity.getImageUrl();
-        this.birthday = userEntity.getBirthday();
+        this.birthday = userEntity.getBirthday().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();;
+
         this.gender = userEntity.getGender();
     }
 
