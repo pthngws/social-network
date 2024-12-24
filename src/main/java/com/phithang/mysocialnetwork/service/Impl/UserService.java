@@ -78,4 +78,11 @@ public class UserService implements IUserService {
     {
         return userRepository.findById(id).orElse(null);
     }
+
+
+    @Override
+    public List<UserEntity> findByFirstnameOrLastnameContaining(String name)
+    {
+        return userRepository.findByFirstnameOrLastnameContaining(name);
+    }
 }

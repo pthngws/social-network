@@ -38,7 +38,7 @@ public class SecurityConfig {
     };
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login", "/auth/introspect", "/auth/logout", "/auth/signup"
+            "/auth/login", "/auth/introspect", "/auth/logout","/**", "/home","/auth/signup","/css/**","/js/**","/images/**"
     };
 
     @Bean
@@ -46,6 +46,8 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                 .requestMatchers(PUBLIC_ENDPOINTS)
+                .permitAll()
+                .requestMatchers(HttpMethod.GET,"/home/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated());
@@ -64,7 +66,6 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
         configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));

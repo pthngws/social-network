@@ -15,6 +15,8 @@ public class UpdateProfileDto {
     private Date birthday;
     private String gender;
 
+    public UpdateProfileDto() {
+    }
     public UpdateProfileDto(UserEntity userEntity) {
         this.id = userEntity.getId();
         this.firstName = userEntity.getFirstname();

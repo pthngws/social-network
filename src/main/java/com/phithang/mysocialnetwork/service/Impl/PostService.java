@@ -198,4 +198,13 @@ public class PostService implements IPostService {
     {
         return postRepository.findAll();
     }
+
+    @Override
+    public List<PostEntity> getMyPost()
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserEntity userEntity = userService.findUserByEmail(email);
+        return postRepository.findAllByAuthor(userEntity);
+    }
 }

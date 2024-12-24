@@ -66,6 +66,15 @@ public class FriendshipService implements IFriendshipService {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         UserEntity userEntity = userService.findUserByEmail(email);
-        return friendshipRepository.findAllByUser2(userEntity);
+        return friendshipRepository.findAllRequests(userEntity);
+    }
+
+    @Override
+    public List<FriendshipEntity> findAllFriends()
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserEntity userEntity = userService.findUserByEmail(email);
+        return friendshipRepository.findAllFriends(userEntity);
     }
 }

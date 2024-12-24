@@ -18,5 +18,11 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Lo
 
     FriendshipEntity findByUser1AndUser2(UserEntity sender, UserEntity receiver);
 
-    List<FriendshipEntity> findAllByUser2(UserEntity userEntity);
+
+    @Query("SELECT f FROM FriendshipEntity f WHERE f.user2 = :userEntity and f.status= 'PENDING' ")
+    List<FriendshipEntity> findAllRequests(UserEntity userEntity);
+
+    @Query("SELECT f FROM FriendshipEntity f WHERE (f.user2 = :userEntity OR f.user1 = :userEntity) AND f.status = 'ACCEPTED'")
+    List<FriendshipEntity> findAllFriends(UserEntity userEntity);
+
 }

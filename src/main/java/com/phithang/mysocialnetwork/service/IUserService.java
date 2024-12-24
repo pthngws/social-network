@@ -17,4 +17,6 @@ public interface IUserService {
     boolean updateProfile(UpdateProfileDto updateProfileDto);
 
     UserEntity findById(Long id);
+
+    List<UserEntity> findByFirstnameOrLastnameContaining(String name);
 }

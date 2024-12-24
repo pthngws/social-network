@@ -31,6 +31,18 @@ public class FriendshipController {
         }
         return new ResponseDto<>(200,friendshipDtos,"Success");
     }
+    @GetMapping("/all")
+    public ResponseDto<List<FriendshipDto>> getAllFriendships() {
+        List<FriendshipEntity> friendshipEntities= friendshipService.findAllFriends();
+        List<FriendshipDto> friendshipDtos = new ArrayList<>();
+        for(FriendshipEntity friendshipEntity:friendshipEntities) {
+            if(friendshipEntity.getUser1().getEmail().equals(SecurityContextHolder.getContext().getAuthentication().getName())) {
+                friendshipEntity.setUser1(friendshipEntity.getUser2());
+            }
+            friendshipDtos.add(new FriendshipDto(friendshipEntity));
+        }
+        return new ResponseDto<>(200,friendshipDtos,"Success");
+    }
 
     @PostMapping("/add")
     public ResponseDto addFriendship(@RequestBody FriendshipRequestDto receiverId) {

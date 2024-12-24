@@ -22,6 +22,36 @@ public class PostController {
     @Autowired
     private IPostService postService;
 
+    @GetMapping("/myposts")
+    public ResponseDto<Iterable<PostDto>> getMyPosts() {
+        // Lấy tất cả bài viết
+        List<PostEntity> posts = postService.getMyPost();
+        List<PostDto> list = new ArrayList<>();
+
+        // Lấy người dùng hiện tại từ SecurityContextHolder
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        for (PostEntity postEntity : posts) {
+            PostDto postDto = new PostDto();
+
+            // Kiểm tra xem bài viết có ai đã like không, tránh lỗi khi likedBy rỗng
+            boolean isLiked = false;
+            if (!postEntity.getLikedBy().isEmpty()) {
+                // Kiểm tra xem người dùng hiện tại có trong danh sách thích không
+                isLiked = postEntity.getLikedBy().get(0).getEmail().equals(currentUserEmail);
+            }
+
+            // Cập nhật trường liked trong PostDto
+            postDto.setLiked(isLiked);
+
+            // Chuyển đổi PostEntity sang PostDto
+            list.add(postDto.toPostDto(postEntity));
+        }
+        list.reversed();
+
+        // Trả về ResponseDto với trạng thái thành công và danh sách bài viết
+        return new ResponseDto<>(200, list, "Get posts successful!");
+    }
     @GetMapping("/posts")
     public ResponseDto<Iterable<PostDto>> getPosts() {
         // Lấy tất cả bài viết
@@ -47,7 +77,7 @@ public class PostController {
             // Chuyển đổi PostEntity sang PostDto
             list.add(postDto.toPostDto(postEntity));
         }
-
+        list.reversed();
         // Trả về ResponseDto với trạng thái thành công và danh sách bài viết
         return new ResponseDto<>(200, list, "Get posts successful!");
     }

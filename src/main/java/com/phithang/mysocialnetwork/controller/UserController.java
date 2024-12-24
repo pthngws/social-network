@@ -8,8 +8,12 @@ import com.phithang.mysocialnetwork.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -32,6 +36,25 @@ public class UserController {
 //        responseDto.setData(userDtos);
 //        return responseDto;
 //    }
+
+    @GetMapping("/search")
+    public ResponseDto<List<UpdateProfileDto>> searchUsers(@RequestParam("name") String name) {
+        List<UserEntity> users = userService.findByFirstnameOrLastnameContaining(name);
+        List<UpdateProfileDto> userDtos = new ArrayList<>();
+        for (UserEntity userEntity : users) {
+            userDtos.add(new UpdateProfileDto(userEntity));
+        }
+        return new ResponseDto<>(200,userDtos,"Search users successful!");
+    }
+
+    @GetMapping("/{id}")
+    public ResponseDto<UpdateProfileDto> getUserById(@PathVariable("id") Long id) {
+        UserEntity userEntity = userService.findById(id);
+        if (userEntity != null) {
+            return new ResponseDto<>(200,new UpdateProfileDto(userEntity),"Get user successful!");
+        }
+        return new ResponseDto<>(400,null,"Get user failed!");
+    }
 
     @GetMapping("/profile")
     public ResponseDto<UpdateProfileDto> getProfile() {

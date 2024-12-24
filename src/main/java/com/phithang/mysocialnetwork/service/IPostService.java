@@ -22,4 +22,6 @@ public interface IPostService {
     boolean commentPost(Long id, CommentDto commentDto);
 
     List<PostEntity> getAllPost();
+
+    List<PostEntity> getMyPost();
 }

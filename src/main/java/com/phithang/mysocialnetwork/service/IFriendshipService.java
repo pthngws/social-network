@@ -17,4 +17,6 @@ public interface IFriendshipService {
     FriendshipEntity findByUser1AndUser2(UserEntity sender, UserEntity receiver);
 
     List<FriendshipEntity> findALlRequest();
+
+    List<FriendshipEntity> findAllFriends();
 }
