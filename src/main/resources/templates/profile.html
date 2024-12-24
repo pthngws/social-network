@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
+<div layout:fragment="content">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - My Social Network</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="css/home.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Container cho avatar */
+      .avatar-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Đặt ảnh vào giữa */
+      .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        background-color: #f0f0f0; /* Màu nền cho ảnh */
+      }
+
+      /* Ảnh đại diện */
+      .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      /* Nút upload nằm trong ảnh */
+      .avatar-upload-btn {
+        position: absolute;
+        top: 80%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 30px;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      /* Nút upload khi hover */
+      .avatar-upload-btn:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+
+      /* Ẩn input file */
+      .avatar-input {
+        display: none;
+      }
+
+
+      .tab-content .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+      }
+      .profile-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .profile-header img {
+        border: 3px solid #007bff;
+      }
+      .profile-header h3 {
+        margin-bottom: 0;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4 custom-container">
+      <!-- Profile Header -->
+      <div class="profile-header d-flex align-items-center mb-4">
+        <img
+        id="main-avatar"
+          src="https://avatars.githubusercontent.com/u/152299575?v=4"
+          class="rounded-circle me-4"
+          alt="Avatar"
+          width="100"
+          height="100"
+        />
+        <div>
+          <h3 id="main-name" class="mb-1"></h3>
+          <h6 id="main-about" class="text-muted mb-0"></h6>
+        </div>
+      </div>
+      <!-- Sub Navbar -->
+      <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="timeline-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#timeline"
+            type="button"
+            role="tab"
+            aria-controls="timeline"
+            aria-selected="true"
+          >
+            Bài viết
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="friends-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#friends"
+            type="button"
+            role="tab"
+            aria-controls="friends"
+            aria-selected="false"
+          >
+            Danh sách bạn
+          </button>
+
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="info-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#info"
+            type="button"
+            role="tab"
+            aria-controls="info"
+            aria-selected="false"
+          >
+            Thông tin cá nhân
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content mt-4" id="profileTabsContent">
+        <!-- Timeline Tab -->
+        <div
+          class="tab-pane fade show active"
+          id="timeline"
+          role="tabpanel"
+          aria-labelledby="timeline-tab"
+        >
+          <div class="post-box mb-4">
+            <div class="d-flex align-items-center">
+              <img
+                src="https://avatars.githubusercontent.com/u/152299575?v=4"
+                height="40px"
+                alt="User"
+                class="me-2"
+              />
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Bạn đang nghĩ gì?"
+                data-bs-toggle="modal"
+                data-bs-target="#createPostModal"
+              />
+            </div>
+          </div>
+          <div class="post-container">
+            <!-- Các bài đăng của người dùng sẽ được hiển thị ở đây -->
+          </div>
+        </div>
+
+        <!-- Friends Tab -->
+        <div
+                class="tab-pane fade"
+                id="friends"
+                role="tabpanel"
+                aria-labelledby="friends-tab"
+        >
+          <div class="card">
+            <div class="card-header">
+              <strong>Danh sách bạn bè</strong>
+            </div>
+            <div class="card-body">
+              <div id="friendsList">
+                <!-- Danh sách bạn bè sẽ được tải động vào đây -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Info Tab -->
+        <div
+          class="tab-pane fade"
+          id="info"
+          role="tabpanel"
+          aria-labelledby="info-tab"
+        >
+          <div class="card">
+            <div class="card-header">
+              <strong>Thông tin cá nhân</strong>
+            </div>
+            <div class="card-body">
+              <form id="userForm">
+                <div class="mb-3">
+
+                  <div class="avatar-container">
+                    <div class="avatar-wrapper">
+                      <img id="avatarImage" src="https://avatars.githubusercontent.com/u/152299575?v=4" alt="Avatar" class="avatar-img" />
+                      <label for="avatar1" class="avatar-upload-btn">
+                        <span class="plus-icon">+</span>
+                      </label>
+                      <input type="file" class="avatar-input" id="avatar1" accept="image/*" />
+                    </div>
+                  </div>
+
+                </div>
+                <div class="mb-3">
+                  <input type="text" class="form-control" id="firstname" value="" placeholder="Họ" />
+                </div>
+                <div class="mb-3">
+                  <input type="text" class="form-control" id="lastname" value="" placeholder="Tên" />
+                </div>
+                <div class="mb-3">
+                  <input type="text" class="form-control" id="about" value="" placeholder="Tiểu sử" />
+                </div>
+                <div class="mb-3">
+                  <input type="date" class="form-control" id="birthday" value="" placeholder="Ngày sinh" />
+                </div>
+                <div class="mb-3">
+                  <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="genderMale" name="gender" value="Male" />
+                    <label class="form-check-label" for="genderMale">Nam</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="genderFemale" name="gender" value="Female" />
+                    <label class="form-check-label" for="genderFemale">Nữ</label>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Lưu thay đổi
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post Example -->
+      <div class="post-container">
+        <!-- Posts will be injected here dynamically -->
+      </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div
+      class="modal fade"
+      id="createPostModal"
+      tabindex="-1"
+      aria-labelledby="createPostModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog custom-modal">
+        <div class="modal-content mt-10">
+          <div class="modal-header">
+            <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <textarea
+              class="form-control mb-3"
+              id="postContent"
+              rows="4"
+              placeholder="Bạn đang nghĩ gì?"
+            ></textarea>
+
+            <!-- Media upload container -->
+            <div id="mediaUploadContainer" class="media-upload-container">
+              <label for="postMedia" class="media-placeholder">
+                <i class="bi bi-camera"></i>
+                <span>Thêm ảnh/video</span>
+              </label>
+              <input
+                class="form-control d-none"
+                type="file"
+                id="postMedia"
+                accept="image/*,video/*"
+                multiple
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="postSubmitBtn">
+              Post
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("postMedia")
+        .addEventListener("change", function (event) {
+          const files = event.target.files;
+          const uploadContainer = document.getElementById(
+            "mediaUploadContainer"
+          );
+
+          Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const mediaItem = document.createElement("div");
+              mediaItem.classList.add("media-item");
+
+              if (file.type.startsWith("image/")) {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                mediaItem.appendChild(img);
+              } else if (file.type.startsWith("video/")) {
+                const video = document.createElement("video");
+                video.src = e.target.result;
+                video.controls = true;
+                mediaItem.appendChild(video);
+              }
+
+              // Add remove button
+              const removeBtn = document.createElement("button");
+              removeBtn.classList.add("remove-btn");
+              removeBtn.innerHTML = "&times;";
+              removeBtn.onclick = function () {
+                mediaItem.remove();
+              };
+              mediaItem.appendChild(removeBtn);
+
+              uploadContainer.appendChild(mediaItem);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+
+      let currentPostId = null;
+
+      // Fetch posts from API
+      fetchPosts();
+
+      // Function to fetch posts
+      function fetchPosts() {
+        fetch("http://localhost:8080/myposts", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const postsContainer = document.querySelector(".post-container");
+            postsContainer.innerHTML = ""; // Clear previous posts
+
+            if (data && data.data) {
+              data.data.forEach((post) => {
+                const postElement = createPostElement(post);
+                postsContainer.appendChild(postElement);
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching posts:", error);
+          });
+      }
+
+      // Function to create post element dynamically
+      function createPostElement(post) {
+        const postElement = document.createElement("div");
+        postElement.classList.add("post-box");
+
+        // Tính toán thời gian chênh lệch
+        const postDate = new Date(post.timestamp);
+        const currentDate = new Date();
+        const timeDiff = currentDate - postDate;
+
+        const secondsAgo = Math.floor(timeDiff / 1000); // Số giây đã trôi qua
+        const minutesAgo = Math.floor(secondsAgo / 60); // Số phút đã trôi qua
+        const hoursAgo = Math.floor(minutesAgo / 60); // Số giờ đã trôi qua
+
+        // Hiển thị thời gian theo định dạng phù hợp
+        let timeDisplay;
+        if (hoursAgo < 1) {
+          if (minutesAgo < 1) {
+            timeDisplay = `${secondsAgo} giây trước`;
+          } else {
+            timeDisplay = `${minutesAgo} phút trước`;
+          }
+        } else if (hoursAgo < 24) {
+          timeDisplay = `${hoursAgo} giờ trước`;
+        } else {
+          timeDisplay = postDate.toLocaleString(); // Nếu quá 24 giờ, hiển thị ngày giờ đầy đủ
+        }
+
+        postElement.innerHTML = `
+        <div class="post-header d-flex align-items-center mb-3">
+            <img src="${post.imageUrl}" alt="User" class="me-2">
+            <div>
+                <strong>${post.authorName}</strong>
+                <br>
+                <small class="text-muted">${timeDisplay}</small>
+            </div>
+        </div>
+        <div class="post-content">
+            <h2>${post.content}</h2>
+        </div>
+        <hr>
+        <div class="reaction-icons d-flex justify-content-between">
+            <i class="bi bi-heart likeBtn" data-post-id="${post.id}"> Thích (${post.likedByCount})</i>
+            <i class="bi bi-chat"> Bình luận (${post.commentCount})</i>
+        </div>
+    `;
+
+        // Thêm sự kiện click vào nút "like"
+        const likeBtn = postElement.querySelector(".likeBtn");
+        likeBtn.addEventListener("click", function () {
+          const postId = likeBtn.getAttribute("data-post-id");
+
+          // Gửi yêu cầu POST để like bài viết
+          fetch(`http://localhost:8080/like/${postId}`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                // Cập nhật số lượt thích
+                const likeCount = likeBtn.innerText.match(/\d+/)[0];
+                likeBtn.innerText = `Thích (${Number(likeCount) + 1})`;
+              } else {
+                console.error("Like failed");
+              }
+            })
+            .catch((error) => {
+              console.error("Error while liking post:", error);
+            });
+        });
+
+        return postElement;
+      }
+
+      // Function to submit a new post with media
+      // Function to submit a new post with media
+      function submitPost() {
+        const content = document.getElementById("postContent").value;
+        const mediaFiles = document.getElementById("postMedia").files;
+
+        const mediaArray = [];
+
+        // Đính kèm từng file media
+        for (let i = 0; i < mediaFiles.length; i++) {
+          const file = mediaFiles[i];
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            const mediaItem = {
+              url: e.target.result,
+              type: file.type.startsWith("image/") ? "image" : "video",
+            };
+            mediaArray.push(mediaItem);
+          };
+
+          reader.readAsDataURL(file);
+        }
+
+        // Đợi cho đến khi các file đã được đọc
+        Promise.all(
+          Array.from(mediaFiles).map((file) => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          })
+        )
+          .then(() => {
+            const postData = {
+              content: content,
+              media: mediaArray,
+            };
+
+            fetch("http://localhost:8080/post", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(postData),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.status === 200) {
+                  console.log("Post created successfully:", data);
+                  fetchPosts(); // Fetch posts after successful submission
+                  const createPostModal = bootstrap.Modal.getInstance(
+                    document.getElementById("createPostModal")
+                  );
+                  createPostModal.hide();
+                } else {
+                  console.error("Failed to create post:", data.message);
+                }
+              })
+              .catch((error) => console.error("Error submitting post:", error));
+          })
+          .catch((error) => {
+            console.error("Error reading files:", error);
+          });
+      }
+
+      // Handle new post submission
+      document
+        .getElementById("postSubmitBtn")
+        .addEventListener("click", function () {
+          const content = document.getElementById("postContent").value;
+          const postData = {
+            content: content,
+            media: [], // Add media support here if needed
+          };
+
+          fetch("http://localhost:8080/post", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(postData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              fetchPosts(); // Re-fetch posts after creation
+              const createPostModal = bootstrap.Modal.getInstance(
+                document.getElementById("createPostModal")
+              );
+              createPostModal.hide();
+            })
+            .catch((error) => {
+              console.error("Error creating post:", error);
+            });
+        });
+
+      // Check if token exists
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login.html"; // Redirect to login if no token
+      }
+
+      // Handle logout
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function () {
+          localStorage.removeItem("token");
+          window.location.href = "/login.html";
+        });
+      }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</div>
+</html>

@@ -1,0 +1,122 @@
+
+body{
+    background-color: whitesmoke;
+}
+
+.navbar{
+    background-color: white;
+}
+.navbar .form-control {
+
+    width: 300px;
+}
+.navbar .bi {
+    font-size: 1.5rem;
+}
+.navbar .dropdown-menu {
+    min-width: 150px;
+}
+.custom-container {
+    max-width: 50%; /* Điều chỉnh độ rộng */
+    margin: 0 auto; /* Căn giữa nội dung */
+}
+
+@media (max-width: 768px) {
+    .custom-container {
+        max-width: 90%; /* Điều chỉnh độ rộng trên thiết bị nhỏ */
+    }
+}
+.post-box {
+    background-color: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.post-content img {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.reaction-icons i {
+    font-size: 1.3rem;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.reaction-icons i:hover {
+    color: #4267B2;
+}
+
+.media-upload-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    border: 2px dashed #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    position: relative;
+    min-height: 100px;
+}
+
+.media-placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    background: #f8f9fa;
+    color: #666;
+    cursor: pointer;
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.media-upload-container .media-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.media-upload-container .media-item img,
+.media-upload-container .media-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-upload-container .media-item .remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+.custom-modal {
+    max-width: 40%; /* Tăng chiều rộng modal */
+    margin: auto;  /* Căn giữa modal */
+    margin-top: 10vh; 
+    height: auto;
+}

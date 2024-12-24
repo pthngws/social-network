@@ -1,0 +1,177 @@
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <!-- Toggle button for mobile -->
+      <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto align-items-center">
+          <li class="nav-item me-3">
+            <a class="nav-link" href="/home">
+              <i class="bi bi-house text-white" title="Home"></i>
+            </a>
+          </li>
+          <li class="nav-item me-3">
+            <form class="d-flex">
+              <input
+                      id="search"
+                      class="form-control me-2"
+                      type="search"
+                      placeholder="Tìm kiếm"
+                      aria-label="Search"
+              />
+              <button class="btn btn-primary" type="button" id="searchButton">
+                <i class="bi bi-search"></i> <!-- Biểu tượng tìm kiếm -->
+              </button>
+            </form>
+
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ms-auto align-items-center position-relative">
+          <li class="nav-item me-3 position-relative">
+            <a class="nav-link" href="#" id="groupsToggle" >
+              <i class="bi bi-people text-white" title="Groups"></i>
+            </a>
+            <div class="dropdown-menu notifications shadow" id="groupsMenu">
+              <h6 class="dropdown-header">Lời mời kết bạn</h6>
+              <div id="friendRequestList">
+                <!-- JavaScript sẽ thêm các lời mời kết bạn vào đây -->
+              </div>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-center" href="#">Xem tất cả lời mời</a>
+            </div>
+          </li>
+
+
+          <!-- Messages -->
+          <li class="nav-item me-3 position-relative">
+            <a class="nav-link" href="#" id="messagesToggle">
+              <i class="bi bi-chat text-white" title="Messages"></i>
+            </a>
+            <div class="dropdown-menu notifications shadow" id="messagesMenu">
+              <h6 class="dropdown-header">Tin nhắn</h6>
+
+              <a class="dropdown-item" href="#">
+                <div class="d-flex">
+                  <img
+                          src="https://e7.pngegg.com/pngimages/84/165/png-clipart-united-states-avatar-organization-information-user-avatar-service-computer-wallpaper-thumbnail.png"
+                          alt="User 1"
+                          class="rounded-circle"
+                          style="width: 40px; height: 40px"
+                  />
+                  <div class="ml-2">
+                    <strong>Admin</strong><br />
+                    <small class="text-muted"
+                    >Chào bạn, bạn có khỏe
+                      không?</small
+                    >
+                  </div>
+                </div>
+              </a>
+
+              <a class="dropdown-item" href="#">
+                <div class="d-flex">
+                  <img
+                          src="https://e7.pngegg.com/pngimages/84/165/png-clipart-united-states-avatar-organization-information-user-avatar-service-computer-wallpaper-thumbnail.png"
+                          alt="User 2"
+                          class="rounded-circle"
+                          style="width: 40px; height: 40px"
+                  />
+                  <div class="ml-2">
+                    <strong>Phi Thắng</strong><br />
+                    <small class="text-muted"
+                    >Cảm ơn bạn đã giúp đỡ</small
+                    >
+                  </div>
+                </div>
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-center" href="#"
+              >Xem tất cả tin nhắn</a
+              >
+            </div>
+          </li>
+
+          <!-- Notifications -->
+          <li class="nav-item me-3 position-relative">
+            <a class="nav-link" href="#" id="notificationsToggle">
+              <i class="bi bi-bell text-white" title="Notifications"></i>
+            </a>
+            <div class="dropdown-menu notifications shadow" id="notificationsMenu">
+              <h6 class="dropdown-header">Thông báo</h6>
+
+              <a class="dropdown-item" href="#">
+                <div class="d-flex">
+                  <img src="https://e7.pngegg.com/pngimages/84/165/png-clipart-united-states-avatar-organization-information-user-avatar-service-computer-wallpaper-thumbnail.png" alt="User 1" class="rounded-circle" style="width: 40px; height: 40px;">
+                  <div class="ml-2">
+                    <strong>Admin</strong><br>
+                    <small class="text-muted">Đã thích bài viết của bạn.</small><br>
+                    <small class="text-muted">Vừa xong</small>
+                  </div>
+                </div>
+              </a>
+
+              <a class="dropdown-item" href="#">
+                <div class="d-flex">
+                  <img src="https://e7.pngegg.com/pngimages/84/165/png-clipart-united-states-avatar-organization-information-user-avatar-service-computer-wallpaper-thumbnail.png" alt="User 2" class="rounded-circle" style="width: 40px; height: 40px;">
+                  <div class="ml-2">
+                    <strong>Phi Thắng</strong><br>
+                    <small class="text-muted">Đã bình luận bài viết của bạn</small><br>
+                    <small class="text-muted">2 phút trước</small>
+                  </div>
+                </div>
+              </a>
+
+
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-center" href="#">Xem tất cả thông báo</a>
+            </div>
+          </li>
+
+          <li class="nav-item dropdown">
+            <a
+                    class="nav-link dropdown-toggle d-flex align-items-center"
+                    href="#"
+                    id="userDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+            >
+              <img
+                      id="avatar"
+                      src=""
+                      height="30px"
+                      alt="User"
+                      class="rounded-circle me-2"
+              />
+              <span id="name" class="text-white"></span>
+
+            </a>
+            <ul
+                    class="dropdown-menu dropdown-menu-end"
+                    aria-labelledby="userDropdown"
+            >
+              <li><a class="dropdown-item" href="/profile">Profile</a></li>
+              <li><a class="dropdown-item" href="#">Settings</a></li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a class="dropdown-item text-danger" href="#">Logout</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,52 @@
+.nav-tabs .nav-link {
+    font-size: 16px;
+    font-weight: bold;
+    color: #495057;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+  .notifications {
+    position: absolute;
+    top: 100%; /* Hiển thị ngay dưới toggle */
+    left: -350px; /* Nghiêng về bên trái */
+    width: 400px; /* Tăng kích thước chiều rộng */
+    display: none; /* Ẩn mặc định */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm hiệu ứng bóng */
+  }
+
+  .notifications .dropdown-header {
+    background-color: #f8f9fa;
+    padding: 12px;
+    font-size: 16px; /* Tăng cỡ chữ */
+    font-weight: bold;
+  }
+
+  .notifications .dropdown-item {
+    padding: 12px;
+    font-size: 15px; /* Tăng cỡ chữ */
+  }
+
+  .notifications .dropdown-item:hover {
+    background-color: #f1f1f1;
+  }
+
+  .notifications .dropdown-divider {
+    margin: 0;
+  }
+
+  .notifications .dropdown-item.text-center {
+    font-weight: bold;
+    color: #007bff; /* Màu xanh nổi bật */
+  }
+
+  .notifications .dropdown-item.text-center:hover {
+    background-color: #e9ecef;
+  }
