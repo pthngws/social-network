@@ -241,7 +241,6 @@
                 <div class="mb-3">
                   <input type="text" class="form-control" id="firstname" placeholder="Họ" required />
                 </div>
-                <!-- Tên -->
                 <div class="mb-3">
                   <input type="text" class="form-control" id="lastname" placeholder="Tên" required />
                 </div>
@@ -436,23 +435,6 @@
             timeDisplay = postDate.toLocaleString(); // Nếu quá 24 giờ, hiển thị ngày giờ đầy đủ
           }
 
-          // Xử lý media (ảnh hoặc video)
-          let mediaContent = '';
-          if (post.media && post.media.length > 0) {
-            // Lấy URL của media đầu tiên trong mảng
-            const mediaUrl = post.media[0].media.url;
-            const mediaType = mediaUrl.split('.').pop(); // Lấy phần mở rộng của URL (từ .jpg, .mp4...)
-
-            if (mediaType === 'jpg' || mediaType === 'jpeg' || mediaType === 'png') {
-              // Nếu là ảnh
-              mediaContent = `<img src="${mediaUrl}" alt="Post media" class="post-media img-fluid" />`;
-            } else if (mediaType === 'mp4' || mediaType === 'mov') {
-              // Nếu là video
-              mediaContent = `<video src="${mediaUrl}" controls class="post-media img-fluid"></video>`;
-            }
-          }
-
-          // Tạo HTML cho bài viết
           postElement.innerHTML = `
         <div class="post-header d-flex align-items-center mb-3">
             <img src="${post.imageUrl}" alt="User" class="me-2">
@@ -464,7 +446,6 @@
         </div>
         <div class="post-content">
             <h2>${post.content}</h2>
-            ${mediaContent} <!-- Hiển thị media -->
         </div>
         <hr>
         <div class="reaction-icons d-flex justify-content-between">
@@ -572,28 +553,11 @@
       }
 
       // Handle new post submission
-      document.getElementById("postSubmitBtn").addEventListener("click", function () {
         const content = document.getElementById("postContent").value;
-        const mediaFiles = document.getElementById("postMedia").files;
-
         const postData = {
           content: content,
-          media: [], // Media array to hold file data
         };
 
-        // Convert media files into MediaDto objects
-        for (let i = 0; i < mediaFiles.length; i++) {
-          const file = mediaFiles[i];
-          const reader = new FileReader();
-
-          reader.onloadend = function () {
-            postData.media.push({
-              url: reader.result, // This will be base64 encoded string for now
-              type: file.type, // 'image/jpeg', 'video/mp4', etc.
-            });
-
-            if (postData.media.length === mediaFiles.length) {
-              // Send request to create post once all media is added
               fetch("http://localhost:8080/post", {
                 method: "POST",
                 headers: {
@@ -613,14 +577,7 @@
                       .catch((error) => {
                         console.error("Error creating post:", error);
                       });
-            }
-          };
-
-          // Read file as DataURL for base64 representation
-          reader.readAsDataURL(file);
-        }
       });
-
 
       // Check if token exists
       const token = localStorage.getItem("token");
