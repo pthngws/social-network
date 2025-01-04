@@ -97,24 +97,27 @@ public class PostService implements IPostService {
         postEntity.setTimestamp(LocalDateTime.now());
         postRepository.save(postEntity);
 
-//        List<MediaEntity> mediaEntities = new ArrayList<>();
-//        for (MediaDto file : postRequestDto.getMedia()) {
-//            var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap());
-//            String mediaUrl = uploadResult.get("secure_url").toString();
-//            String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
-//            MediaEntity mediaEntity = new MediaEntity();
-//            mediaEntity.setUrl(mediaUrl);
-//            mediaEntity.setType(mediaType);
-//            mediaEntities.add(mediaEntity);
-//        }
-//        for (MediaEntity media : mediaEntities) {
-//            media = mediaRepository.save(media);
-//
-//            PostMediaEntity postMedia = new PostMediaEntity();
-//            postMedia.setPost(postEntity);
-//            postMedia.setMedia(media);
-//            postMediaRepository.save(postMedia);
-//        }
+        List<MediaEntity> mediaEntities = new ArrayList<>();
+        for (MediaDto file : postRequestDto.getMedia()) {
+            var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap()); // Upload base64 string
+            String mediaUrl = uploadResult.get("secure_url").toString();
+            String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
+            MediaEntity mediaEntity = new MediaEntity();
+            mediaEntity.setUrl(mediaUrl);
+            mediaEntity.setType(mediaType);
+            mediaEntities.add(mediaEntity);
+        }
+
+        // Lưu media
+        for (MediaEntity media : mediaEntities) {
+            media = mediaRepository.save(media);
+
+            PostMediaEntity postMedia = new PostMediaEntity();
+            postMedia.setPost(postEntity);
+            postMedia.setMedia(media);
+            postMediaRepository.save(postMedia);
+        }
+
         return postEntity;
     }
 
@@ -210,5 +213,11 @@ public class PostService implements IPostService {
         String email = authentication.getName();
         UserEntity userEntity = userService.findUserByEmail(email);
         return postRepository.findAllByAuthor(userEntity);
+    }
+
+    @Override
+    public PostEntity findById(Long id)
+    {
+        return postRepository.findById(id).orElse(null);
     }
 }

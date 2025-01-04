@@ -18,6 +18,7 @@ public class PostDto {
     private boolean liked;
     private List<PostMediaEntity> media;
     private java.time.LocalDateTime timestamp;
+    
 
     public PostDto toPostDto(PostEntity postEntity)
     {

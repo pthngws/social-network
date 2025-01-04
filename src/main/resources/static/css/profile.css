@@ -1,0 +1,74 @@
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Đặt ảnh vào giữa */
+.avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f0f0f0; /* Màu nền cho ảnh */
+}
+
+/* Ảnh đại diện */
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Nút upload nằm trong ảnh */
+.avatar-upload-btn {
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Nút upload khi hover */
+.avatar-upload-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Ẩn input file */
+.avatar-input {
+    display: none;
+}
+
+
+.tab-content .card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+.profile-header {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.profile-header img {
+    border: 3px solid #007bff;
+}
+.profile-header h3 {
+    margin-bottom: 0;
+}
