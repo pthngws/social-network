@@ -74,14 +74,15 @@ public class PostController {
             boolean isLiked = false;
             if (!postEntity.getLikedBy().isEmpty()) {
                 // Kiểm tra xem người dùng hiện tại có trong danh sách thích không
-                isLiked = postEntity.getLikedBy().get(0).getEmail().equals(currentUserEmail);
+                isLiked = postEntity.getLikedBy().stream()
+                        .anyMatch(user -> user.getEmail().equals(currentUserEmail));
             }
 
-            // Cập nhật trường liked trong PostDto
-            postDto.setLiked(isLiked);
 
+            postDto = postDto.toPostDto(postEntity);
+            postDto.setLiked(isLiked);
             // Chuyển đổi PostEntity sang PostDto
-            list.add(postDto.toPostDto(postEntity));
+            list.add(postDto);
         }
         Collections.reverse(list);
         // Trả về ResponseDto với trạng thái thành công và danh sách bài viết

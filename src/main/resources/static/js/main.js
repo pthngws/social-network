@@ -204,3 +204,10 @@ $(document).ready(function () {
         window.location.href = `http://localhost:8080/search/${encodeURIComponent(name)}`;
     });
 });
+function logout() {
+    // Xóa token JWT khỏi localStorage
+    localStorage.removeItem("token");
+
+    // Chuyển hướng người dùng về trang đăng nhập
+    window.location.href = "/login";
+}
