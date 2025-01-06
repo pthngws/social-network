@@ -26,4 +26,8 @@ public class CommentEntity {
     private PostEntity post;
 
     private java.time.LocalDateTime timestamp;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_comment_id")
+    private CommentEntity parentComment;
 }

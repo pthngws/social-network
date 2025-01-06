@@ -12,4 +12,7 @@ public class CommentResponseDto {
     private Long authorId;
     private String imageUrl;
     private LocalDateTime timestamp;
+    private String replyAuthorName;
+    private Long replyId;
+    private Long replyAuthorId;
 }

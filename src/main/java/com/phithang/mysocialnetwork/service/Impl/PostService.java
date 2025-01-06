@@ -8,10 +8,7 @@ import com.phithang.mysocialnetwork.dto.MediaDto;
 import com.phithang.mysocialnetwork.dto.request.PostRequestDto;
 import com.phithang.mysocialnetwork.dto.request.PostUpdateDto;
 import com.phithang.mysocialnetwork.entity.*;
-import com.phithang.mysocialnetwork.repository.MediaRepository;
-import com.phithang.mysocialnetwork.repository.NotificationRepository;
-import com.phithang.mysocialnetwork.repository.PostMediaRepository;
-import com.phithang.mysocialnetwork.repository.PostRepository;
+import com.phithang.mysocialnetwork.repository.*;
 import com.phithang.mysocialnetwork.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +24,9 @@ import java.util.List;
 public class PostService implements IPostService {
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Autowired
     private UserService userService;
@@ -45,6 +45,8 @@ public class PostService implements IPostService {
 
     @Autowired
     private Cloudinary cloudinary;
+
+
 
     @Transactional
     @Override
@@ -171,34 +173,62 @@ public class PostService implements IPostService {
     }
 
     @Override
-    public boolean commentPost(Long id, CommentDto commentDto)
-    {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        UserEntity userEntity = userService.findUserByEmail(email);
-        PostEntity postEntity = postRepository.findById(id).orElse(null);
-        if(postEntity!=null && userEntity!=null)
-        {
+    public boolean commentPost(Long id, CommentDto commentDto) {
+        try {
+            // Lấy thông tin người dùng hiện tại
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            UserEntity userEntity = userService.findUserByEmail(email);
+
+            if (userEntity == null) {
+                throw new RuntimeException("User not found.");
+            }
+
+            // Lấy bài viết theo ID
+            PostEntity postEntity = postRepository.findById(id).orElse(null);
+
+            if (postEntity == null) {
+                throw new RuntimeException("Post not found.");
+            }
+
+            // Tạo comment mới
             CommentEntity commentEntity = new CommentEntity();
             commentEntity.setPost(postEntity);
             commentEntity.setAuthor(userEntity);
             commentEntity.setTimestamp(LocalDateTime.now());
             commentEntity.setContent(commentDto.getContent());
+
+            // Xử lý parentComment nếu có
+            if (commentDto.getParentCommentId() != null) {
+                CommentEntity parentComment = commentRepository.findById(commentDto.getParentCommentId()).orElse(null);
+                if (parentComment == null) {
+                    throw new RuntimeException("Parent comment not found.");
+                }
+                commentEntity.setParentComment(parentComment);
+            }
+
+            // Lưu comment
             postEntity.getComments().add(commentEntity);
-            if(!email.trim().equals(postEntity.getAuthor().getEmail().trim()))
-            {
+            postRepository.save(postEntity);
+
+            // Thêm thông báo (nếu cần)
+            if (!email.trim().equals(postEntity.getAuthor().getEmail().trim())) {
                 NotificationEntity notificationEntity = new NotificationEntity();
                 notificationEntity.setUser(postEntity.getAuthor());
-                notificationEntity.setIsread(0);
+                notificationEntity.setIsread(0); // 0 = chưa đọc
                 notificationEntity.setTimestamp(LocalDateTime.now());
-                notificationEntity.setContent(userEntity.getEmail() + "commented your post");
+                notificationEntity.setContent(userEntity.getEmail() + " commented on your post");
                 notificationRepository.save(notificationEntity);
             }
-            postRepository.save(postEntity);
+
             return true;
+        } catch (Exception e) {
+            // Log lỗi (cần thêm logger ở đây)
+            System.err.println("Error in commentPost: " + e.getMessage());
+            return false;
         }
-        return false;
     }
+
 
     @Override
     public List<PostEntity> getAllPost()

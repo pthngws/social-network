@@ -1,5 +1,8 @@
 package com.phithang.mysocialnetwork.repository;
 
 
-public interface CommentRepository {
+import com.phithang.mysocialnetwork.entity.CommentEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 }

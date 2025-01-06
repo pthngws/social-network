@@ -144,10 +144,22 @@ function handleCommentButton(post, postElement) {
         const commentInput = commentBox.querySelector("textarea");
 
         submitCommentBtn.addEventListener("click", function () {
-            const commentContent = commentInput.value.trim();
+            let commentContent = commentInput.value.trim();
             if (!commentContent) {
                 alert("Vui lòng nhập nội dung bình luận.");
                 return;
+            }
+
+            // Lấy thông tin authorId và authorName từ metadata
+            const authorId = commentInput.getAttribute("data-author-id");
+            const authorName = commentInput.getAttribute("data-author-name");
+
+            if (authorId && authorName) {
+                // Thay thế tên đầy đủ của người dùng vào thẻ <a>
+                commentContent = commentContent.replace(
+                    `@${authorName}`,
+                    `<a href="/${authorId}" style="font-weight: bold; text-decoration: none;">${authorName}</a>`
+                );
             }
 
             fetch(`http://localhost:8080/comment/${post.id}`, {
@@ -162,6 +174,8 @@ function handleCommentButton(post, postElement) {
                 .then((data) => {
                     if (data.message === "Comment successful!") {
                         commentInput.value = "";
+                        commentInput.removeAttribute("data-author-id"); // Xóa metadata
+                        commentInput.removeAttribute("data-author-name");
                         commentBox.querySelector(".comment-list")?.remove();
                         fetchComments(post.id, commentBox);
                     } else {
@@ -172,10 +186,10 @@ function handleCommentButton(post, postElement) {
                     console.error("Error while commenting:", error);
                 });
         });
+
+
     });
 }
-
-// Lấy danh sách bình luận
 function fetchComments(postId, commentBox) {
     fetch(`http://localhost:8080/comment/${postId}`, {
         headers: {
@@ -186,52 +200,167 @@ function fetchComments(postId, commentBox) {
         .then((data) => {
             if (data.status === 200 && data.data.length > 0) {
                 const comments = data.data;
+
+                // Chỉ lấy các bình luận gốc (không phải trả lời)
+                const rootComments = comments
+                    .filter((comment) => !comment.replyId)
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
                 const commentList = document.createElement("div");
                 commentList.classList.add("comment-list", "mt-2");
 
-                comments.forEach((comment) => {
-                    const commentItem = document.createElement("div");
-                    commentItem.classList.add("comment-item", "mb-2");
+                // Hàm hiển thị các bình luận với thanh cây
+                function renderComments(commentTree, parentElement, level = 0) {
+                    commentTree.forEach((comment) => {
+                        const commentItem = document.createElement("div");
+                        commentItem.classList.add("comment-item", "mb-2", "position-relative");
 
-                    // Tính toán thời gian bình luận
-                    const commentDate = new Date(comment.timestamp);
-                    const currentDate = new Date();
-                    const timeDiff = currentDate - commentDate;
+                        // Tính toán thời gian bình luận
+                        const commentDate = new Date(comment.timestamp);
+                        const currentDate = new Date();
+                        const timeDiff = currentDate - commentDate;
 
-                    const secondsAgo = Math.floor(timeDiff / 1000);
-                    const minutesAgo = Math.floor(secondsAgo / 60);
-                    const hoursAgo = Math.floor(minutesAgo / 60);
+                        const secondsAgo = Math.floor(timeDiff / 1000);
+                        const minutesAgo = Math.floor(secondsAgo / 60);
+                        const hoursAgo = Math.floor(minutesAgo / 60);
 
-                    let timeDisplay;
-                    if (hoursAgo < 1) {
-                        timeDisplay = minutesAgo < 1 ? `${secondsAgo} giây trước` : `${minutesAgo} phút trước`;
-                    } else if (hoursAgo < 24) {
-                        timeDisplay = `${hoursAgo} giờ trước`;
-                    } else {
-                        timeDisplay = commentDate.toLocaleString();
-                    }
+                        let timeDisplay;
+                        if (hoursAgo < 1) {
+                            timeDisplay = minutesAgo < 1 ? `${secondsAgo} giây trước` : `${minutesAgo} phút trước`;
+                        } else if (hoursAgo < 24) {
+                            timeDisplay = `${hoursAgo} giờ trước`;
+                        } else {
+                            timeDisplay = commentDate.toLocaleString();
+                        }
 
-                    // Tạo giao diện bình luận
-                    commentItem.innerHTML = `
-    <div class="d-flex align-items-start">
-        <!-- Avatar của người dùng -->
-        <img src="${comment.imageUrl}" alt="${comment.authorName}" class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-        <!-- Nội dung bình luận -->
-        <div class="bg-light rounded-3 p-2" style="flex-grow: 1; max-width: calc(100% - 50px);">
-            <a href='http://localhost:8080/${comment.authorId}' class="d-block" style="font-size: 0.95rem; color: black; font-weight: bold; text-decoration: none;">${comment.authorName}</a>
-            <p class="mb-1" style="font-size: 0.9rem; line-height: 1.4;">${comment.content}</p>
-        </div>
-    </div>
-    <div class="ms-5">
-        <small class="text-muted">${timeDisplay}</small>
-<a class="btn reply-btn" href="javascript:void(0);" data-comment-id="${comment.id}">Trả lời</a>
-    </div>
-   
-`;
+                        // Tạo giao diện bình luận
+                        commentItem.innerHTML = `
+                            <div class="d-flex align-items-start">
+                                <img src="${comment.imageUrl}" alt="${comment.authorName}" class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div class="bg-light rounded-3 p-2" style="flex-grow: 1; max-width: calc(100% - 50px);">
+                                    <a href='http://localhost:8080/${comment.authorId}' class="d-block" style="font-size: 0.95rem; color: black; font-weight: bold; text-decoration: none;">${comment.authorName}</a>
+                                    <p class="mb-1" style="font-size: 0.9rem; line-height: 1.4;">
+                                        ${comment.replyAuthorName ? `<a href="http://localhost:8080/${comment.replyAuthorId}" style="font-weight: bold; text-decoration: none;" class="text-primary">${comment.replyAuthorName}</a> ` : ""}
+                                        ${comment.content}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="ms-5">
+                                <small class="text-muted">${timeDisplay}</small>
+                                <a class="btn reply-btn" href="javascript:void(0);" data-comment-id="${comment.id}" data-author-name="${comment.authorName}" data-author-id="${comment.authorId}">Trả lời</a>
+                                <div class="reply-box mt-2" style="display: none;"></div>
+                            </div>
+                        `;
 
-                    commentList.appendChild(commentItem);
-                });
+                        // Đánh dấu ID cho việc link đến
+                        commentItem.id = `comment-${comment.id}`;
 
+                        // Thêm thụt lề để thể hiện cấp độ
+                        commentItem.style.marginLeft = `${level * 20}px`; // Mỗi cấp sẽ thụt vào 20px
+
+                        // Thêm sự kiện "Trả lời"
+                        const replyBtn = commentItem.querySelector(".reply-btn");
+                        replyBtn.addEventListener("click", function () {
+                            const replyBox = commentItem.querySelector(".reply-box");
+                            replyBox.innerHTML = ""; // Reset box
+
+                            if (replyBox.style.display === "none") {
+                                replyBox.style.display = "block";
+
+                                // Tạo box nhập trả lời
+                                const replyInputBox = document.createElement("div");
+                                replyInputBox.innerHTML = `
+                                    <div class="d-flex align-items-center">
+                                        <textarea class="form-control" rows="1" style="resize: none;" placeholder="Trả lời..."></textarea>
+                                        <button class="btn btn-primary btn-sm ms-2 submit-reply" style="white-space: nowrap;">Đăng</button>
+                                    </div>
+                                `;
+                                replyBox.appendChild(replyInputBox);
+
+                                const replyInput = replyBox.querySelector("textarea");
+                                const submitReplyBtn = replyBox.querySelector(".submit-reply");
+
+                                submitReplyBtn.addEventListener("click", function () {
+                                    const replyContent = replyInput.value.trim();
+                                    if (!replyContent) {
+                                        alert("Vui lòng nhập nội dung trả lời.");
+                                        return;
+                                    }
+
+                                    fetch(`http://localhost:8080/comment/${postId}`, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                                        },
+                                        body: JSON.stringify({
+                                            content: replyContent,
+                                            parentCommentId: replyBtn.getAttribute("data-comment-id"),
+                                        }),
+                                    })
+                                        .then((response) => response.json())
+                                        .then((data) => {
+                                            if (data.message === "Comment successful!") {
+                                                replyInput.value = "";
+                                                replyBox.style.display = "none";
+                                                commentBox.querySelector(".comment-list")?.remove();
+                                                fetchComments(postId, commentBox);
+                                            } else {
+                                                alert("Trả lời thất bại.");
+                                            }
+                                        })
+                                        .catch((error) => {
+                                            console.error("Error while replying:", error);
+                                        });
+                                });
+                            } else {
+                                replyBox.style.display = "none";
+                            }
+                        });
+
+                        parentElement.appendChild(commentItem);
+
+                        // Tạo phần bình luận con cho bình luận gốc
+                        const childComments = comments.filter(c => c.replyId === comment.id);
+                        if (childComments.length > 0) {
+                            // Tạo nút "Xem thêm" cho bình luận gốc
+                            const showMoreBtn = document.createElement("button");
+                            showMoreBtn.classList.add("btn", "btn-link", "show-more-replies");
+                            showMoreBtn.textContent = "Xem thêm ";// Căn gần lề phải
+                            showMoreBtn.style.marginLeft = "10px"; // Khoảng cách lề phải
+                            showMoreBtn.style.fontWeight = "bold"; // In đậm
+                            showMoreBtn.style.color = "black";    // Chữ màu đen
+                            commentItem.appendChild(showMoreBtn);
+
+                            // Tạo container cho phần phản hồi
+                            const replyContainer = document.createElement("div");
+                            replyContainer.classList.add("child-comments", "ms-4", "mt-2");
+                            commentItem.appendChild(replyContainer);
+
+                            // Ẩn phần phản hồi ban đầu
+                            replyContainer.style.display = "none";
+
+                            // Khi nhấn nút "Xem thêm", hiển thị phản hồi
+                            showMoreBtn.addEventListener("click", () => {
+                                if (replyContainer.style.display === "none") {
+                                    // Hiển thị phản hồi nếu chưa được render
+                                    if (!replyContainer.dataset.loaded) {
+                                        renderComments(childComments, replyContainer, level ); // Tăng cấp độ khi render
+                                        replyContainer.dataset.loaded = true; // Đánh dấu đã render
+                                    }
+                                    replyContainer.style.display = "block";
+                                    showMoreBtn.textContent = "Ẩn bớt phản hồi"; // Thay đổi nội dung nút
+                                } else {
+                                    // Ẩn phản hồi
+                                    replyContainer.style.display = "none";
+                                    showMoreBtn.textContent = "Xem thêm"; // Thay đổi nội dung nút
+                                }
+                            });
+                        }
+                    });
+                }
+
+                renderComments(rootComments, commentList); // Không chia cấp bậc cho bình luận
                 commentBox.appendChild(commentList);
             } else {
                 const noComments = document.createElement("p");
@@ -244,7 +373,6 @@ function fetchComments(postId, commentBox) {
             console.error("Error fetching comments:", error);
         });
 }
-
 
 // Sử dụng sự kiện jQuery động
 $(document).ready(function() {

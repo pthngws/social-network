@@ -163,15 +163,14 @@ public class PostController {
 
 
 
-    @PostMapping("/comment/{id}")
-    public ResponseDto<CommentDto> comment(@PathVariable Long id, @RequestBody CommentDto commentDto)
-        {
-        if(postService.commentPost(id,commentDto))
-        {
-            return new ResponseDto<>(200,commentDto,"Comment successful!");
+    @PostMapping("/comment/{postId}")
+    public ResponseDto<CommentDto> comment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
+        if (postService.commentPost(postId, commentDto)) {
+            return new ResponseDto<>(200, commentDto, "Comment successful!");
         }
-        return new ResponseDto<>(400,null,"Comment failed!");
-        }
+        return new ResponseDto<>(400, null, "Comment failed!");
+    }
+
 
     @GetMapping("/comment/{id}")
     public ResponseDto<List<CommentResponseDto>> getComments(@PathVariable Long id) {
@@ -189,6 +188,12 @@ public class PostController {
                 commentResponseDto.setAuthorName(commentEntity.getAuthor().getFirstname() + " " + commentEntity.getAuthor().getLastname());
                 commentResponseDto.setImageUrl(commentEntity.getAuthor().getImageUrl());
                 commentResponseDto.setTimestamp(commentEntity.getTimestamp());
+                if(commentEntity.getParentComment() != null)
+                {
+                    commentResponseDto.setReplyAuthorName(commentEntity.getParentComment().getAuthor().getFirstname() + " " + commentEntity.getParentComment().getAuthor().getLastname());
+                    commentResponseDto.setReplyId(commentEntity.getParentComment().getId());
+                    commentResponseDto.setReplyAuthorId(commentEntity.getParentComment().getAuthor().getId());
+                }
                 list.add(commentResponseDto);
             }
 

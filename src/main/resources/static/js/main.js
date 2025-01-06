@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+    checkToken();
     $(document).ready(function () {
         // Hàm tính thời gian gửi kết bạn
         function calculateTimeAgo(timestamp) {
@@ -171,3 +172,20 @@ function logout() {
     // Chuyển hướng người dùng về trang đăng nhập
     window.location.href = "/login";
 }
+function checkToken() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        // Token không tồn tại
+        logout();
+    } else {
+        const payload = JSON.parse(atob(token.split('.')[1])); // Decode payload
+        const isExpired = payload.exp * 1000 < Date.now();
+        if (isExpired) {
+            // Token đã hết hạn
+            logout();
+        }
+    }
+}
+
+// Gọi hàm checkToken định kỳ (ví dụ 5 phút/lần)
+setInterval(checkToken, 5 * 60 * 1000);
