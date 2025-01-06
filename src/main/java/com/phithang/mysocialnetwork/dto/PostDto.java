@@ -12,6 +12,7 @@ public class PostDto {
     private Long id;
     private String content;
     private String authorName;
+    private Long authorId;
     private String imageUrl;// Thông tin tác giả không nhạy cảm
     private int commentCount;
     private int likedByCount;
@@ -25,6 +26,7 @@ public class PostDto {
         PostDto postDto = new PostDto();
         postDto.setId(postEntity.getId());
         postDto.setContent(postEntity.getContent());
+        postDto.setAuthorId(postEntity.getAuthor().getId());
         postDto.setAuthorName(postEntity.getAuthor().getFirstname() + " " + postEntity.getAuthor().getLastname());
         postDto.setImageUrl(postEntity.getAuthor().getImageUrl());
         postDto.setTimestamp(postEntity.getTimestamp());

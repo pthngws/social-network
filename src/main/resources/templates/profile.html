@@ -4,22 +4,16 @@
       layout:decorate="~{layout.html}">
 <div layout:fragment="content">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/profile.css" rel="stylesheet" />
-    <title>Profile</title>
   </head>
   <body>
-  <div class="container mt-4 custom-container">
+  <div class="container mt-4 custom-container" style="width: 40%">
     <!-- Profile Header -->
     <div class="profile-header d-flex align-items-center mb-4">
       <img
               id="main-avatar"
-              src="https://avatars.githubusercontent.com/u/152299575?v=4"
-              class="rounded-circle me-4"
-              alt="Avatar"
-              width="100"
-              height="100"
+              src="https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg"
+              class="me-2 rounded-circle" style="width: 100px; height: 100px; object-fit: cover;"
       />
       <div>
         <h3 id="main-name" class="mb-1"></h3>
@@ -86,9 +80,7 @@
             <img
                     id ="avatar-mini"
                     src=""
-                    height="40px"
-                    alt="User"
-                    class="me-2"
+                    class="me-2 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;"
             />
             <input
                     type="text"
@@ -141,7 +133,7 @@
                 <!-- Avatar Upload -->
                 <div class="avatar-container">
                   <div class="avatar-wrapper">
-                    <img id="avatarImage" src="https://avatars.githubusercontent.com/u/152299575?v=4" alt="Avatar" class="avatar-img" />
+                    <img id="avatarImage" src="https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg" alt="Avatar" class="avatar-img" />
                     <label for="avatar1" class="avatar-upload-btn">
                       <span class="plus-icon">+</span>
                     </label>

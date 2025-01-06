@@ -9,6 +9,7 @@ public class CommentResponseDto {
     private Long id;
     private String content;
     private String authorName;
+    private Long authorId;
     private String imageUrl;
     private LocalDateTime timestamp;
 }

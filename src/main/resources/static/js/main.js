@@ -30,16 +30,18 @@ document.addEventListener("DOMContentLoaded", function () {
                         const timeAgo = calculateTimeAgo(request.requestTimestamp);
 
                         return `
-                    <a class="dropdown-item d-flex justify-content-between" href="#">
+                    <div class="dropdown-item d-flex justify-content-between" >
                         <div class="d-flex">
                             <img
                                 src="${request.user.avatar}"
                                 alt="${request.user.firstName} ${request.user.lastName}"
-                                class="rounded-circle"
-                                style="width: 40px; height: 40px"
+                                class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;"
                             />
                             <div class="ml-2">
-                                <strong>${request.user.firstName} ${request.user.lastName}</strong><br />
+                                <a href="http://localhost:8080/${request.user.id}" style="color: black; font-weight: bold; text-decoration: none;">
+  ${request.user.firstName} ${request.user.lastName}
+</a><br />
+
                                 <small class="text-muted">${timeAgo}</small>
                             </div>
                         </div>
@@ -73,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 data: JSON.stringify({ receiverId: userId }), // Gửi ID của người gửi lời mời
                 success: function (response) {
-                    alert('Lời mời kết bạn đã được chấp nhận!');
                     location.reload(); // Tải lại danh sách sau khi chấp nhận
                 },
                 error: function () {
@@ -95,7 +96,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 data: JSON.stringify({ receiverId: userId }), // Gửi ID của người gửi lời mời
                 success: function (response) {
-                    alert('Lời mời kết bạn đã bị từ chối!');
                     location.reload(); // Tải lại danh sách sau khi từ chối
                 },
                 error: function () {
@@ -106,46 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-
-    const token = localStorage.getItem("token");  // Hoặc lấy token từ nơi bạn lưu trữ
-
-    if (token) {
-        // Gửi request tới API với token
-        fetch("http://localhost:8080/user/profile", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,  // Thêm token vào header
-                "Content-Type": "application/json"
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 200) {
-                    const user = data.data;
-                    $("#avatar-mini").attr("src", user.avatar);
-                    $("#avatar").attr("src", user.avatar);  // Gán đường dẫn ảnh
-                    $("#name").text(user.firstName + " " + user.lastName);  // Gán tên
-                    $("#main-avatar").attr("src", user.avatar);
-                    $("#main-name").text(user.firstName + " " + user.lastName);  // Gán tên
-                    $("#main-about").text(user.about);
-                    // Gán dữ liệu vào form
-                    $("#firstname").val(user.firstName);
-                    $("#lastname").val(user.lastName);
-                    $("#about").val(user.about);
-                    $("#birthday").val(user.birthday.split("T")[0]); // Lấy phần ngày từ birthday
-                    $(`input[name='gender'][value='${user.gender}']`).prop("checked", true); // Chọn giới tính
-                    // Gán avatar
-                    $("#avatarImage").attr("src", user.avatar);
-                } else {
-                    console.error("Không thể lấy thông tin người dùng:", data.message);
-                }
-            })
-            .catch(error => {
-                console.error("Lỗi khi lấy thông tin người dùng:", error);
-            });
-    } else {
-        console.error("Không tìm thấy token!");
-    }
     const toggles = {
       groupsToggle: "groupsMenu",
       messagesToggle: "messagesMenu",

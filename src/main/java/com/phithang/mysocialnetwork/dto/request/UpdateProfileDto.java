@@ -18,7 +18,7 @@ public class UpdateProfileDto {
     private String avatar;
     private LocalDate birthday;
     private String gender;
-
+    private String friendStatus; // Thêm thuộc tính isFriend
     public UpdateProfileDto() {
     }
     public UpdateProfileDto(UserEntity userEntity) {

@@ -30,6 +30,11 @@ public class HomeController {
 
     @GetMapping("/search/{name}")
     public String search() {
-        return "search";
+        return "listuser";
+    }
+
+    @GetMapping("/{id}")
+    public String user() {
+        return "user";
     }
 }

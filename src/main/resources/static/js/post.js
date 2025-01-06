@@ -37,9 +37,9 @@ function createPostElement(post) {
     // Tạo HTML cho bài viết
     postElement.innerHTML = `
         <div class="post-header d-flex align-items-center mb-3">
-            <img src="${post.imageUrl}" alt="User" class="me-2 rounded-circle" style="width: 50px; height: 50px;">
+            <img src="${post.imageUrl}" alt="User" class="me-2 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
             <div>
-                <strong>${post.authorName}</strong>
+                <a href='http://localhost:8080/${post.authorId}' style="color: black; font-weight: bold; text-decoration: none;">${post.authorName}</a>
                 <br>
                 <small class="text-muted">${timeDisplay}</small>
             </div>
@@ -218,7 +218,7 @@ function fetchComments(postId, commentBox) {
         <img src="${comment.imageUrl}" alt="${comment.authorName}" class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
         <!-- Nội dung bình luận -->
         <div class="bg-light rounded-3 p-2" style="flex-grow: 1; max-width: calc(100% - 50px);">
-            <strong class="d-block" style="font-size: 0.95rem;">${comment.authorName}</strong>
+            <a href='http://localhost:8080/${comment.authorId}' class="d-block" style="font-size: 0.95rem; color: black; font-weight: bold; text-decoration: none;">${comment.authorName}</a>
             <p class="mb-1" style="font-size: 0.9rem; line-height: 1.4;">${comment.content}</p>
         </div>
     </div>

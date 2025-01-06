@@ -3,7 +3,9 @@ package com.phithang.mysocialnetwork.controller;
 import com.phithang.mysocialnetwork.dto.response.ResponseDto;
 import com.phithang.mysocialnetwork.dto.request.UpdateProfileDto;
 import com.phithang.mysocialnetwork.dto.UserDto;
+import com.phithang.mysocialnetwork.entity.FriendshipEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
+import com.phithang.mysocialnetwork.service.IFriendshipService;
 import com.phithang.mysocialnetwork.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +26,9 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private IFriendshipService friendshipService;
+
 //    @GetMapping(value = "/all")
 //    public ResponseDto<List<UserDto>> getUsers() {
 //        var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -42,11 +47,27 @@ public class UserController {
     @GetMapping("/search")
     public ResponseDto<List<UpdateProfileDto>> searchUsers(@RequestParam("name") String name) {
         List<UserEntity> users = userService.findByFirstnameOrLastnameContaining(name);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserEntity userEntity2 = userService.findUserByEmail(authentication.getName());
         List<UpdateProfileDto> userDtos = new ArrayList<>();
         for (UserEntity userEntity : users) {
-            if(userEntity.getBirthday() == null)
-                userEntity.setBirthday(new Date());
-            userDtos.add(new UpdateProfileDto(userEntity));
+            if(!userEntity.getId().equals(userEntity2.getId())) {
+                FriendshipEntity friendshipEntity = friendshipService.findBySenderAndReceiver(userEntity, userEntity2);
+                String friendStatus = "NULL";
+                if (friendshipEntity != null) {
+                    friendStatus = friendshipEntity.getStatus();
+                    if (friendStatus.equals("PENDING")) {
+                        if (friendshipEntity.getUser1().equals(userEntity)) {
+                            friendStatus = "SENT_BY_OTHER";
+                        }
+                    }
+                }
+                if (userEntity.getBirthday() == null)
+                    userEntity.setBirthday(new Date());
+                UpdateProfileDto updateProfileDto = new UpdateProfileDto(userEntity);
+                updateProfileDto.setFriendStatus(friendStatus);
+                userDtos.add(updateProfileDto);
+            }
         }
         return new ResponseDto<>(200,userDtos,"Search users successful!");
     }
@@ -54,8 +75,25 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseDto<UpdateProfileDto> getUserById(@PathVariable("id") Long id) {
         UserEntity userEntity = userService.findById(id);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserEntity userEntity2 = userService.findUserByEmail(authentication.getName());
+        FriendshipEntity friendshipEntity =friendshipService.findBySenderAndReceiver(userEntity, userEntity2);
+        String friendStatus = "NULL";
+        if(friendshipEntity != null)
+        {
+            friendStatus = friendshipEntity.getStatus();
+            if(friendStatus.equals("PENDING"))
+            {
+                if(friendshipEntity.getUser1().equals(userEntity))
+                {
+                    friendStatus = "SENT_BY_OTHER";
+                }
+            }
+        }
         if (userEntity != null) {
-            return new ResponseDto<>(200,new UpdateProfileDto(userEntity),"Get user successful!");
+            UpdateProfileDto updateProfileDto = new  UpdateProfileDto(userEntity);
+            updateProfileDto.setFriendStatus(friendStatus);
+            return new ResponseDto<>(200,updateProfileDto,"Get user successful!");
         }
         return new ResponseDto<>(400,null,"Get user failed!");
     }

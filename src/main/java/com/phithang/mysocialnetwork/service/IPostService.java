@@ -25,5 +25,7 @@ public interface IPostService {
 
     List<PostEntity> getMyPost();
 
+    List<PostEntity> getUserPosts(Long userId);
+
     PostEntity findById(Long id);
 }

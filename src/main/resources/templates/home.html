@@ -4,17 +4,14 @@
       layout:decorate="~{layout.html}">
 <div layout:fragment="content">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - My Social Network</title>
     <link href="css/home.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container mt-4 custom-container">
+    <div class="container mt-4 custom-container" style="width: 40%">
         <!-- Create Post Box -->
         <div class="post-box">
             <div class="d-flex align-items-center">
-                <img id="avatar-mini" src="" height="40px" alt="User" class="me-2">
+                <img id="avatar-mini" src="" class="me-2 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
                 <input type="text" class="form-control" placeholder="Bạn đang nghĩ gi?" data-bs-toggle="modal" data-bs-target="#createPostModal">
             </div>
         </div>
@@ -52,10 +49,11 @@
         </div>
     </div>
 </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="/js/home.js" ></script>
     <script src="/js/post.js" ></script>
 </body>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 </div>
 
 </html>

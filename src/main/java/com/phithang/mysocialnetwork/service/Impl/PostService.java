@@ -214,6 +214,13 @@ public class PostService implements IPostService {
         UserEntity userEntity = userService.findUserByEmail(email);
         return postRepository.findAllByAuthor(userEntity);
     }
+    @Override
+    public List<PostEntity> getUserPosts(Long userId)
+    {
+        UserEntity userEntity = userService.findById(userId);
+        return postRepository.findAllByAuthor(userEntity);
+    }
+
 
     @Override
     public PostEntity findById(Long id)
