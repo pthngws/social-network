@@ -349,7 +349,7 @@ function fetchComments(postId, commentBox) {
                                         replyContainer.dataset.loaded = true; // Đánh dấu đã render
                                     }
                                     replyContainer.style.display = "block";
-                                    showMoreBtn.textContent = "Ẩn bớt phản hồi"; // Thay đổi nội dung nút
+                                    showMoreBtn.textContent = "Ẩn phản hồi"; // Thay đổi nội dung nút
                                 } else {
                                     // Ẩn phản hồi
                                     replyContainer.style.display = "none";
