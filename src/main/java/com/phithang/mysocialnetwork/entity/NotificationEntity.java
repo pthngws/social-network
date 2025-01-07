@@ -20,4 +20,8 @@ public class NotificationEntity {
     private int isread = 0; // Trạng thái đã đọc hay chưa
 
     private java.time.LocalDateTime timestamp;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = true) // Thông báo có thể liên quan đến bài viết
+    private PostEntity post;
 }

@@ -157,7 +157,8 @@ public class PostService implements IPostService {
                     notificationEntity.setUser(postEntity.getAuthor());
                     notificationEntity.setIsread(0);
                     notificationEntity.setTimestamp(LocalDateTime.now());
-                    notificationEntity.setContent(userEntity.getEmail() + " liked your post");
+                    notificationEntity.setContent(userEntity.getFirstname() +" "+userEntity.getLastname() + " đã yêu thích bài viết của bạn.");
+                    notificationEntity.setPost(postEntity);
                     notificationRepository.save(notificationEntity);
                 }
                 postRepository.save(postEntity);
@@ -217,7 +218,8 @@ public class PostService implements IPostService {
                 notificationEntity.setUser(postEntity.getAuthor());
                 notificationEntity.setIsread(0); // 0 = chưa đọc
                 notificationEntity.setTimestamp(LocalDateTime.now());
-                notificationEntity.setContent(userEntity.getEmail() + " commented on your post");
+                notificationEntity.setContent(userEntity.getFirstname() +" "+userEntity.getLastname()+ " đã bình luận bài viết của bạn.");
+                notificationEntity.setPost(postEntity);
                 notificationRepository.save(notificationEntity);
             }
 

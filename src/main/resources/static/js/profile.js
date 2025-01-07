@@ -108,7 +108,7 @@ $(document).ready(function () {
                                     style="width: 50px; height: 50px; margin-right: 15px;"
                                 />
                                 <div>
-                                    <strong>${user.firstName} ${user.lastName}</strong><br />
+                                    <a href="http://localhost:8080/${user.id}" style="color: black; font-weight: bold; text-decoration: none;" >${user.firstName} ${user.lastName}</a><br />
                                     <small class="text-muted">${user.about || "Không có thông tin"}</small>
                                 </div>
                             </div>
@@ -145,7 +145,6 @@ $(document).ready(function () {
                 contentType: 'application/json',
                 data: JSON.stringify({ receiverId: friendId }),
                 success: function (response) {
-                    alert(response.message);
                     loadFriendsList(); // Cập nhật lại danh sách sau khi xóa
                 },
                 error: function () {

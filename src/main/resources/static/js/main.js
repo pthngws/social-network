@@ -1,5 +1,62 @@
 document.addEventListener("DOMContentLoaded", function () {
     checkToken();
+    $.ajax({
+        url: "http://localhost:8080/notify",
+        method: "GET",
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            "Content-Type": "application/json",
+        },
+        success: function (response) {
+            if (response.status === 200) {
+                displayNotifications(response.data); // Hiển thị thông báo
+            } else {
+                console.error("Lỗi khi lấy thông báo:", response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Lỗi kết nối:", error);
+        },
+    });
+    function timeAgo(dateString) {
+        const now = new Date();
+        const date = new Date(dateString);
+        const diff = Math.floor((now - date) / 1000); // Tính chênh lệch thời gian (giây)
+
+        if (diff < 60) {
+            return `${diff} giây trước`;
+        } else if (diff < 3600) {
+            const minutes = Math.floor(diff / 60);
+            return `${minutes} phút trước`;
+        } else if (diff < 86400) {
+            const hours = Math.floor(diff / 3600);
+            return `${hours} giờ trước`;
+        } else {
+            const days = Math.floor(diff / 86400);
+            return `${days} ngày trước`;
+        }
+    }
+
+// Hàm hiển thị thông báo
+    function displayNotifications(notifications) {
+        const notificationsList = $("#notificationsList");
+        notificationsList.empty();
+
+        notifications.forEach(notification => {
+            const notificationItem = `
+      <div class="dropdown-item" style="padding-left: 20px">
+        <div class="notification-item align-items-center">
+    <div >
+        <p class="m-0 fw-bold">${notification.content}</p>
+        <small class="text-muted">${timeAgo(notification.date)}</small>
+    </div>
+</div>
+
+      </div>
+    `;
+            notificationsList.append(notificationItem);
+        });
+    }
     $(document).ready(function () {
         // Hàm tính thời gian gửi kết bạn
         function calculateTimeAgo(timestamp) {
@@ -31,26 +88,30 @@ document.addEventListener("DOMContentLoaded", function () {
                         const timeAgo = calculateTimeAgo(request.requestTimestamp);
 
                         return `
-                    <div class="dropdown-item d-flex justify-content-between" >
-                        <div class="d-flex">
-                            <img
-                                src="${request.user.avatar}"
-                                alt="${request.user.firstName} ${request.user.lastName}"
-                                class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;"
-                            />
-                            <div class="ml-2">
-                                <a href="http://localhost:8080/${request.user.id}" style="color: black; font-weight: bold; text-decoration: none;">
-  ${request.user.firstName} ${request.user.lastName}
-</a><br />
+                    <div class="dropdown-item d-flex justify-content-between align-items-center">
+    <!-- Avatar and User Info -->
+    <div class="d-flex">
+        <img
+            src="${request.user.avatar}"
+            alt="${request.user.firstName} ${request.user.lastName}"
+            class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;"
+        />
+        <div class="ml-2">
+            <a href="http://localhost:8080/${request.user.id}" style="color: black; font-weight: bold; text-decoration: none;">
+                ${request.user.firstName} ${request.user.lastName}
+            </a>
+            <br />
+            <small class="text-muted">${timeAgo}</small>
+        </div>
+    </div>
 
-                                <small class="text-muted">${timeAgo}</small>
-                            </div>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary btn-sm accept-btn" data-user-id="${request.user.id}">Chấp nhận</button>
-                            <button class="btn btn-danger btn-sm reject-btn" data-user-id="${request.user.id}">Từ chối</button>
-                        </div>
-                    </a>
+    <!-- Accept/Reject Buttons -->
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm accept-btn" data-user-id="${request.user.id}">Chấp nhận</button>
+        <button class="btn btn-danger btn-sm reject-btn" data-user-id="${request.user.id}">Từ chối</button>
+    </div>
+</div>
+
                 `;
                     }).join('');
                     $('#friendRequestList').html(friendRequestsHtml);

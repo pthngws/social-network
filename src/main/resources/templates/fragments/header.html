@@ -16,9 +16,10 @@
 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto align-items-center">
-          <li class="nav-item me-3">
+          <li class="nav-item me-3 position-relative">
             <a class="nav-link" href="/home">
-              <i class="bi bi-house text-white" title="Home"></i>
+              <img src="/img/logo-white.png" alt=""
+                   style="width: 40px; height: 40px">
             </a>
           </li>
           <li class="nav-item me-3">
@@ -37,11 +38,10 @@
 
           </li>
         </ul>
-
-        <ul class="navbar-nav ms-auto align-items-center position-relative">
+        <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item me-3 position-relative">
             <a class="nav-link" href="#" id="groupsToggle" >
-              <i class="bi bi-people text-white" title="Groups"></i>
+              <i class="bi bi-people-fill text-white" title="Groups"></i>
             </a>
             <div class="dropdown-menu notifications shadow" id="groupsMenu">
               <h6 class="dropdown-header">Lời mời kết bạn</h6>
@@ -57,7 +57,7 @@
           <!-- Messages -->
           <li class="nav-item me-3 position-relative">
             <a class="nav-link" href="#" id="messagesToggle">
-              <i class="bi bi-chat text-white" title="Messages"></i>
+              <i class="bi bi-chat-fill text-white" title="Messages"></i>
             </a>
             <div class="dropdown-menu notifications shadow" id="messagesMenu">
               <h6 class="dropdown-header">Tin nhắn</h6>
@@ -106,37 +106,17 @@
           <!-- Notifications -->
           <li class="nav-item me-3 position-relative">
             <a class="nav-link" href="#" id="notificationsToggle">
-              <i class="bi bi-bell text-white" title="Notifications"></i>
+              <i class="bi bi-bell-fill text-white" title="Notifications"></i>
             </a>
             <div class="dropdown-menu notifications shadow" id="notificationsMenu">
               <h6 class="dropdown-header">Thông báo</h6>
-
-              <a class="dropdown-item" href="#">
-                <div class="d-flex">
-                  <img src="https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg" alt="User 1" class="rounded-circle" style="width: 40px; height: 40px;">
-                  <div class="ml-2">
-                    <strong>Admin</strong><br>
-                    <small class="text-muted">Đã thích bài viết của bạn.</small><br>
-                    <small class="text-muted">Vừa xong</small>
-                  </div>
-                </div>
-              </a>
-
-              <a class="dropdown-item" href="#">
-                <div class="d-flex">
-                  <img src="https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg" alt="User 2" class="rounded-circle" style="width: 40px; height: 40px;">
-                  <div class="ml-2">
-                    <strong>Phi Thắng</strong><br>
-                    <small class="text-muted">Đã bình luận bài viết của bạn</small><br>
-                    <small class="text-muted">2 phút trước</small>
-                  </div>
-                </div>
-              </a>
-
-
+              <div id="notificationsList">
+                <!-- JavaScript sẽ thêm các thông báo vào đây -->
+              </div>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item text-center" href="#">Xem tất cả thông báo</a>
             </div>
+
           </li>
 
           <li class="nav-item dropdown">
@@ -153,7 +133,7 @@
                       src=""
                       class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;"
               />
-              <span id="name" class="text-white"></span>
+              <span id="name" class="text-white fw-bold"></span>
 
             </a>
             <ul
