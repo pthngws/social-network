@@ -95,30 +95,28 @@ public class PostService implements IPostService {
         // Tạo bài viết
         PostEntity postEntity = postRepository.findById(postRequestDto.getId()).orElse(null);
         postEntity.setContent(postRequestDto.getContent());
-        postEntity.setAuthor(author);
-        postEntity.setTimestamp(LocalDateTime.now());
         postRepository.save(postEntity);
 
         List<MediaEntity> mediaEntities = new ArrayList<>();
-        for (MediaDto file : postRequestDto.getMedia()) {
-            var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap()); // Upload base64 string
-            String mediaUrl = uploadResult.get("secure_url").toString();
-            String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
-            MediaEntity mediaEntity = new MediaEntity();
-            mediaEntity.setUrl(mediaUrl);
-            mediaEntity.setType(mediaType);
-            mediaEntities.add(mediaEntity);
-        }
-
-        // Lưu media
-        for (MediaEntity media : mediaEntities) {
-            media = mediaRepository.save(media);
-
-            PostMediaEntity postMedia = new PostMediaEntity();
-            postMedia.setPost(postEntity);
-            postMedia.setMedia(media);
-            postMediaRepository.save(postMedia);
-        }
+//        for (MediaDto file : postRequestDto.getMedia()) {
+//            var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap()); // Upload base64 string
+//            String mediaUrl = uploadResult.get("secure_url").toString();
+//            String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
+//            MediaEntity mediaEntity = new MediaEntity();
+//            mediaEntity.setUrl(mediaUrl);
+//            mediaEntity.setType(mediaType);
+//            mediaEntities.add(mediaEntity);
+//        }
+//
+//        // Lưu media
+//        for (MediaEntity media : mediaEntities) {
+//            media = mediaRepository.save(media);
+//
+//            PostMediaEntity postMedia = new PostMediaEntity();
+//            postMedia.setPost(postEntity);
+//            postMedia.setMedia(media);
+//            postMediaRepository.save(postMedia);
+//        }
 
         return postEntity;
     }

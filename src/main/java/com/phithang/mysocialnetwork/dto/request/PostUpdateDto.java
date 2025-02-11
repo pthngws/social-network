@@ -9,6 +9,5 @@ import java.util.List;
 public class PostUpdateDto {
     private Long id;
     private String content;
-    private List<MediaDto> media;
 
 }

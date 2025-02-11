@@ -38,7 +38,7 @@ public class SecurityConfig {
     };
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login", "/auth/introspect", "/auth/logout","/**", "/home","/search/**","/auth/signup","/css/**","/js/**","/images/**"
+            "/auth/login", "/auth/introspect", "/auth/logout","/**", "/home","/search/**","/auth/signup","/css/**","/js/**","/images/**","/ws/**"
     };
 
     @Bean
@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                 .requestMatchers(PUBLIC_ENDPOINTS)
                 .permitAll()
-                .requestMatchers(HttpMethod.GET,"/home/**")
+                .requestMatchers(HttpMethod.GET,"/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated());

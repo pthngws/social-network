@@ -48,8 +48,11 @@ function createPostElement(post) {
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="postOptions">
+                    ${post.authorId == localStorage.getItem("userId") ? `
                     <li><button class="dropdown-item edit-post" data-id="${post.id}">Chỉnh sửa</button></li>
                     <li><button class="dropdown-item delete-post" data-id="${post.id}">Xóa</button></li>
+                ` : '<li><button class="dropdown-item report-post" data-id="${post.id}">Báo cáo</button></li>'}
+                
                 </ul>
             </div>
         </div>
@@ -248,10 +251,37 @@ function fetchComments(postId, commentBox) {
                             <div class="ms-5">
                                 <small class="text-muted">${timeDisplay}</small>
                                 <a class="btn reply-btn" href="javascript:void(0);" data-comment-id="${comment.id}" data-author-name="${comment.authorName}" data-author-id="${comment.authorId}">Trả lời</a>
+                                <a class="btn delete-btn" href="javascript:void(0);" data-comment-id="${comment.id}" onmouseover="this.style.color='red';" onmouseout="this.style.color='black'; this.style.textDecoration='none'">Xóa</a>
                                 <div class="reply-box mt-2" style="display: none;"></div>
                             </div>
                         `;
+// Thêm sự kiện "Xóa"
+                        const deleteBtn = commentItem.querySelector(".delete-btn");
+                        deleteBtn.addEventListener("click", function () {
+                            if (confirm("Bạn có chắc chắn muốn xóa bình luận này không?")) {
+                                const commentId = deleteBtn.getAttribute("data-comment-id");
 
+                                fetch(`http://localhost:8080/comment/${commentId}`, {
+                                    method: "DELETE",
+                                    headers: {
+                                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                                    },
+                                })
+                                    .then((response) => response.json())
+                                    .then((data) => {
+                                        if (data.status === 200) {
+                                            alert("Xóa bình luận thành công!");
+                                            commentItem.remove(); // Xóa bình luận khỏi giao diện
+                                        } else {
+                                            alert("Xóa bình luận thất bại!");
+                                        }
+                                    })
+                                    .catch((error) => {
+                                        console.error("Error deleting comment:", error);
+                                        alert("Đã xảy ra lỗi khi xóa bình luận.");
+                                    });
+                            }
+                        });
                         // Đánh dấu ID cho việc link đến
                         commentItem.id = `comment-${comment.id}`;
 
@@ -376,11 +406,7 @@ function fetchComments(postId, commentBox) {
 
 // Sử dụng sự kiện jQuery động
 $(document).ready(function() {
-    // Gắn sự kiện cho các nút "Chỉnh sửa" và "Xóa" động
-    $("body").on("click", ".edit-post", function() {
-        var postId = $(this).data("id");
-        window.location.href = "/edit-post/" + postId;  // Điều hướng đến trang chỉnh sửa
-    });
+
 
     $("body").on("click", ".delete-post", function() {
         var postId = $(this).data("id");
@@ -506,3 +532,45 @@ function createPost(postData) {
         });
 }
 
+
+document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("edit-post")) {
+        const postId = event.target.getAttribute("data-id");
+        const postContent = event.target.closest(".post-box").querySelector(".post-content h2").innerText;
+
+        // Đưa dữ liệu vào modal
+        document.getElementById("editPostId").value = postId;
+        document.getElementById("editPostContent").value = postContent;
+
+        // Hiển thị modal
+        const editModal = new bootstrap.Modal(document.getElementById("editPostModal"));
+        editModal.show();
+    }
+});
+
+document.getElementById("saveEditPost").addEventListener("click", function () {
+    const postId = document.getElementById("editPostId").value;
+    const newContent = document.getElementById("editPostContent").value;
+
+    // Gửi yêu cầu cập nhật lên server (giả sử API là /updatePost)
+    fetch(`/post/${postId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: postId, content: newContent })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status== 200) {
+                // Cập nhật nội dung bài viết trên giao diện
+                const postElement = document.querySelector(`.edit-post[data-id="${postId}"]`).closest(".post-box");
+                postElement.querySelector(".post-content h2").innerText = newContent;
+
+                // Đóng modal
+                const editModal = bootstrap.Modal.getInstance(document.getElementById("editPostModal"));
+                editModal.hide();
+            } else {
+                alert("Cập nhật thất bại!");
+            }
+        })
+        .catch(error => console.error("Lỗi:", error));
+});

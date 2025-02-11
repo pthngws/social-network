@@ -1,0 +1,30 @@
+<div>
+    <div id="chat-popup">
+        <div id="chat-popup-header">
+            <span id="page-title">Chat Room</span>
+            <button onclick="toggleChatPopup()">&times;</button>
+        </div>
+
+        <div id="customer-list" style="display: none;">
+            <ul id="customer-list-items"></ul>
+        </div>
+
+        <!-- Chat Room -->
+        <div id="chat-room" style="display: none;">
+            <div id="chat-box"></div>
+            <form id="message-form">
+                <input id="message-input" type="text" placeholder="Soạn tin nhắn">
+                <div class="input-group-append">
+                    <button type="button" onclick="sendMessage()" style="background-color: white; color: #007bff; font-size: 24px;">
+                        &#10148;
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Nút Open Chat -->
+    <div> <button class="chat-btn btn-light" onclick="toggleChatPopup()"><i class="fas fa-comments"></i></button></div>
+</div>

@@ -1,0 +1,188 @@
+#chat-popup {
+    display: none; /* Mặc định ẩn */
+    position: fixed;
+    bottom: 20px; /* Cùng độ cao với nút */
+    right: 90px; /* Khoảng cách từ nút đến popup */
+    width: 350px; /* Độ rộng của popup */
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+}
+.chat-btn {
+    position: fixed; /* Giữ cố định vị trí */
+    bottom: 20px;    /* Cách đáy 20px */
+    right: 20px;     /* Cách phải 20px */
+    z-index: 1000;   /* Hiển thị phía trên các thành phần khác */
+    width: 60px;     /* Chiều rộng của nút */
+    height: 60px;    /* Chiều cao của nút */
+    border-radius: 50%; /* Tạo hình tròn */
+    font-size: 24px;  /* Kích thước chữ lớn hơn */
+    background-color: #007bff !important; /* Màu nền xanh của nút */
+    color: white !important;    /* Màu chữ trắng */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;    /* Xóa viền */
+    outline: none;   /* Xóa outline khi nhấn */
+}
+
+.chat-btn:hover {
+    background-color: #033365;
+    color: white;/* Màu nền khi hover */
+}
+
+.chat-btn i {
+    font-size: 30px; /* Kích thước icon */
+}
+
+
+/* Header with Close Button */
+#chat-popup-header {
+    background-color: #007bff;
+    color: white;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#chat-popup-header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+/* Chat Box for Messages */
+#chat-box {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    background-color: #f0f2f5;
+}
+
+/* Message Styles */
+.message {
+    display: flex;
+    align-items: flex-end;
+}
+
+.sender {
+    justify-content: flex-end; /* Align sender's message to the right */
+}
+
+.receiver {
+    justify-content: flex-start; /* Align receiver's message to the left */
+}
+
+.sender .message-bubble {
+    background-color: #a6d8ff;
+    color: black;
+    border-radius: 15px 15px 0 15px;
+    padding: 10px;
+    max-width: 70%;
+}
+
+.message-bubble {
+    word-wrap: break-word; /* Tự động xuống dòng khi gặp từ dài */
+    word-break: break-word; /* Tự động ngắt từ khi không đủ chỗ */
+    max-width: 70%; /* Giới hạn chiều rộng của khung tin nhắn */
+    background-color: #f1f1f1; /* Màu nền (tuỳ chỉnh theo ý thích) */
+    padding: 10px; /* Khoảng cách giữa nội dung và viền */
+    border-radius: 10px; /* Bo góc */
+}
+
+
+.receiver .message-bubble {
+    background-color: white;
+    color: black;
+    border-radius: 15px 15px 15px 0;
+    padding: 10px;
+    max-width: 70%;
+}
+
+.message-time {
+    font-size: 0.75em;
+    color: black;
+    margin-top: 3px;
+}
+.date-separator{
+    text-align: center;
+}
+
+#message-form {
+    display: flex;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    background-color: white;
+}
+
+#message-input {
+    flex-grow: 1;
+    border-radius: 20px;
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    margin-right: 10px;
+}
+
+.input-group-append button {
+    background-color: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px 12px;
+}
+.input-group-append button:hover {
+    background-color: #005bb5;
+}
+#customer-list-items {
+    list-style: none; /* Xóa dấu chấm đầu dòng */
+    margin: 0;
+    padding: 0;
+    max-height: 300px; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Thêm thanh cuộn khi vượt quá chiều cao */
+    border: 1px solid #ddd; /* Đường viền */
+    border-radius: 5px; /* Góc bo tròn */
+    background-color: #f9f9f9; /* Màu nền */
+}
+
+#customer-list-items li {
+    padding: 10px 15px; /* Khoảng cách trong */
+    border-bottom: 1px solid #eee; /* Đường kẻ dưới */
+    cursor: pointer; /* Con trỏ chuột thay đổi */
+    font-size: 16px; /* Cỡ chữ */
+    transition: background-color 0.3s ease; /* Hiệu ứng hover mượt mà */
+}
+
+#customer-list-items li:hover {
+    background-color: #e0f7fa; /* Màu nền khi hover */
+}
+
+#customer-list-items li:last-child {
+    border-bottom: none; /* Xóa đường kẻ dưới cùng */
+}
+
+#customer-list-items::-webkit-scrollbar {
+    width: 6px; /* Độ rộng thanh cuộn */
+}
+
+#customer-list-items::-webkit-scrollbar-thumb {
+    background-color: #bbb; /* Màu thanh cuộn */
+    border-radius: 10px; /* Góc bo thanh cuộn */
+}
+
+#customer-list-items::-webkit-scrollbar-thumb:hover {
+    background-color: #999; /* Màu thanh cuộn khi hover */
+}
+
+#customer-list-items::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* Màu nền thanh cuộn */
+    border-radius: 10px;
+}

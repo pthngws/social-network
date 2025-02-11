@@ -7,6 +7,7 @@ import com.phithang.mysocialnetwork.dto.response.CommentResponseDto;
 import com.phithang.mysocialnetwork.dto.response.ResponseDto;
 import com.phithang.mysocialnetwork.entity.CommentEntity;
 import com.phithang.mysocialnetwork.entity.PostEntity;
+import com.phithang.mysocialnetwork.service.ICommentService;
 import com.phithang.mysocialnetwork.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,9 @@ import java.util.List;
 public class PostController {
     @Autowired
     private IPostService postService;
+
+    @Autowired
+    private ICommentService commentService;
 
     @GetMapping("/userpost/{id}")
     public ResponseDto<Iterable<PostDto>> getUserPosts(@PathVariable Long id) {
@@ -202,6 +206,18 @@ public class PostController {
         }
 
         // Nếu bài viết không tồn tại, trả về lỗi
+        return new ResponseDto<>(400,null,"Fail");
+    }
+
+    @DeleteMapping("/comment/{id}")
+    public ResponseDto<String> deleteComment(@PathVariable Long id) {
+        CommentEntity commentEntity = commentService.findById(id);
+        if (commentEntity != null) {
+
+            if(commentService.delete(commentEntity)) {
+                return new ResponseDto<>(200, "Success", "Comment successful!");
+            }
+        }
         return new ResponseDto<>(400,null,"Fail");
     }
 

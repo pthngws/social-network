@@ -45,6 +45,7 @@ $(document).ready(function () {
                     const token = data.data.token;
                     if (token) {
                         localStorage.setItem("token", token);
+                        localStorage.setItem("userId", data.data.id);
                         window.location.href = "http://localhost:8080/home"; // Redirect to home page
                     } else {
                         $("#login-error-message").text("Login failed. No token received.");
