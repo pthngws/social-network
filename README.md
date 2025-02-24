@@ -16,9 +16,8 @@
 
 ## Giới Thiệu
 
-Đây là một ứng dụng mạng xã hội đơn giản với hai vai trò chính:
+Đây là một ứng dụng mạng xã hội đơn giản với vai trò chính:
 
-- **Admin**: Quản lý hệ thống, kiểm duyệt nội dung và người dùng.
 - **Client**: Người dùng có thể kết bạn, nhắn tin, bình luận và thích bài viết.
 
 Các tính năng chính bao gồm:
