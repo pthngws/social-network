@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     checkToken();
     $.ajax({
-        url: "http://localhost:8080/notify",
+        url: "/notify",
         method: "GET",
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const notificationsList = $("#notificationsList");
         notificationsList.empty();
 
-        notifications.forEach(notification => {
+        notifications.reverse().forEach(notification => {
             const notificationItem = `
       <div class="dropdown-item" style="padding-left: 20px">
         <div class="notification-item align-items-center">
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Gửi yêu cầu API để lấy danh sách lời mời kết bạn
         $.ajax({
-            url: 'http://localhost:8080/friendship/requests',
+            url: '/friendship/requests',
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
             class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;"
         />
         <div class="ml-2">
-            <a href="http://localhost:8080/${request.user.id}" style="color: black; font-weight: bold; text-decoration: none;">
+            <a href="${request.user.id}" style="color: black; font-weight: bold; text-decoration: none;">
                 ${request.user.firstName} ${request.user.lastName}
             </a>
             <br />
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const userId = $(this).data('user-id'); // Lấy ID của người gửi lời mời
 
             $.ajax({
-                url: 'http://localhost:8080/friendship/accept',
+                url: '/friendship/accept',
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const userId = $(this).data('user-id'); // Lấy ID của người gửi lời mời
 
             $.ajax({
-                url: 'http://localhost:8080/friendship/cancel',
+                url: '/friendship/cancel',
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -170,31 +170,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const toggles = {
       groupsToggle: "groupsMenu",
-      messagesToggle: "messagesMenu",
       notificationsToggle: "notificationsMenu",
     };
 
-    // Thêm sự kiện cho từng toggle
     Object.keys(toggles).forEach((toggleId) => {
-      const toggle = document.getElementById(toggleId);
-      const menu = document.getElementById(toggles[toggleId]);
+        const toggle = document.getElementById(toggleId);
+        const menu = document.getElementById(toggles[toggleId]);
 
-      toggle.addEventListener("click", function (event) {
-        event.preventDefault();
+        // Kiểm tra nếu toggle và menu đều tồn tại trong DOM
+        if (toggle && menu) {
+            toggle.addEventListener("click", function (event) {
+                event.preventDefault();
 
-        // Ẩn tất cả các menu khác
-        Object.keys(toggles).forEach((otherToggleId) => {
-          const otherMenu = document.getElementById(toggles[otherToggleId]);
-          if (otherMenu !== menu) {
-            otherMenu.style.display = "none";
-          }
-        });
+                // Ẩn tất cả các menu khác
+                Object.keys(toggles).forEach((otherToggleId) => {
+                    const otherMenu = document.getElementById(toggles[otherToggleId]);
+                    if (otherMenu !== menu) {
+                        otherMenu.style.display = "none";
+                    }
+                });
 
-        // Hiển thị hoặc ẩn menu hiện tại
-        menu.style.display =
-          menu.style.display === "block" ? "none" : "block";
-      });
+                // Hiển thị hoặc ẩn menu hiện tại
+                menu.style.display =
+                    menu.style.display === "block" ? "none" : "block";
+            });
+        }
     });
+
 
     // Ẩn tất cả menu khi click ra ngoài
     document.addEventListener("click", function (event) {
@@ -223,7 +225,7 @@ $(document).ready(function () {
         }
 
         // Chuyển hướng sang trang kết quả với từ khóa trong URL
-        window.location.href = `http://localhost:8080/search/${encodeURIComponent(name)}`;
+        window.location.href = `/search/${encodeURIComponent(name)}`;
     });
 });
 function logout() {
@@ -231,7 +233,7 @@ function logout() {
     localStorage.removeItem("token");
 
     // Chuyển hướng người dùng về trang đăng nhập
-    window.location.href = "/login";
+    window.location.href = "/";
 }
 function checkToken() {
     const token = localStorage.getItem('token');
@@ -249,4 +251,4 @@ function checkToken() {
 }
 
 // Gọi hàm checkToken định kỳ (ví dụ 5 phút/lần)
-setInterval(checkToken, 5 * 60 * 1000);
+setInterval(checkToken,  60 * 1000);

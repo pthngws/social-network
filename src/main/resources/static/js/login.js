@@ -1,5 +1,7 @@
+
 $(document).ready(function () {
     const token = localStorage.getItem("token");
+
     function isTokenValid(token) {
         try {
             // Tách phần payload (Base64) từ token
@@ -15,14 +17,37 @@ $(document).ready(function () {
 
     if (token && isTokenValid(token)) {
         // Nếu token hợp lệ, chuyển hướng
-        window.location.href = "http://localhost:8080/home";
+        window.location.href = "/home";
         return; // Dừng mã khác
     } else {
         // Xử lý nếu token hết hạn hoặc không tồn tại
         console.log("Token hết hạn hoặc không tồn tại.");
     }
 
-
+    $("#googleLoginBtn").click(function () {
+        $.ajax({
+            url: "http://localhost:8080/auth/oauth2-login",
+            method: "GET",
+            success: function (data) {
+                if (data.status === 200) {
+                    const token = data.data.token;
+                    if (token) {
+                        localStorage.setItem("token", token);
+                        localStorage.setItem("userId", data.data.id);
+                        window.location.href = "/home";
+                    } else {
+                        $("#login-error-message").text("Login failed. No token received.");
+                    }
+                } else {
+                    $("#login-error-message").text(data.message);
+                }
+            },
+            error: function (error) {
+                console.error("Error:", error);
+                $("#login-error-message").text("An error occurred, please try again.");
+            }
+        });
+    });
     // Handle login form submission
     $("#loginForm").submit(function (event) {
         event.preventDefault();
@@ -36,7 +61,7 @@ $(document).ready(function () {
         };
 
         $.ajax({
-            url: "http://localhost:8080/auth/login",
+            url: "/auth/login",
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(loginData),
@@ -46,7 +71,7 @@ $(document).ready(function () {
                     if (token) {
                         localStorage.setItem("token", token);
                         localStorage.setItem("userId", data.data.id);
-                        window.location.href = "http://localhost:8080/home"; // Redirect to home page
+                        window.location.href = "/home"; // Redirect to home page
                     } else {
                         $("#login-error-message").text("Login failed. No token received.");
                     }
@@ -80,7 +105,7 @@ $(document).ready(function () {
         };
 
         $.ajax({
-            url: "http://localhost:8080/auth/signup",
+            url: "/auth/signup",
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(signupData),

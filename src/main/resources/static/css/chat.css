@@ -142,7 +142,7 @@
 .input-group-append button:hover {
     background-color: #005bb5;
 }
-#customer-list-items {
+#friend-list-items {
     list-style: none; /* Xóa dấu chấm đầu dòng */
     margin: 0;
     padding: 0;
@@ -153,7 +153,7 @@
     background-color: #f9f9f9; /* Màu nền */
 }
 
-#customer-list-items li {
+#friend-list-items li {
     padding: 10px 15px; /* Khoảng cách trong */
     border-bottom: 1px solid #eee; /* Đường kẻ dưới */
     cursor: pointer; /* Con trỏ chuột thay đổi */
@@ -161,28 +161,28 @@
     transition: background-color 0.3s ease; /* Hiệu ứng hover mượt mà */
 }
 
-#customer-list-items li:hover {
+#friend-list-items li:hover {
     background-color: #e0f7fa; /* Màu nền khi hover */
 }
 
-#customer-list-items li:last-child {
+#friend-list-items li:last-child {
     border-bottom: none; /* Xóa đường kẻ dưới cùng */
 }
 
-#customer-list-items::-webkit-scrollbar {
+#friend-list-items::-webkit-scrollbar {
     width: 6px; /* Độ rộng thanh cuộn */
 }
 
-#customer-list-items::-webkit-scrollbar-thumb {
+#friend-list-items::-webkit-scrollbar-thumb {
     background-color: #bbb; /* Màu thanh cuộn */
     border-radius: 10px; /* Góc bo thanh cuộn */
 }
 
-#customer-list-items::-webkit-scrollbar-thumb:hover {
+#friend-list-items::-webkit-scrollbar-thumb:hover {
     background-color: #999; /* Màu thanh cuộn khi hover */
 }
 
-#customer-list-items::-webkit-scrollbar-track {
+#friend-list-items::-webkit-scrollbar-track {
     background-color: #f1f1f1; /* Màu nền thanh cuộn */
     border-radius: 10px;
 }

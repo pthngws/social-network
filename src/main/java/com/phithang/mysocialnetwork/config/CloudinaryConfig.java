@@ -1,4 +1,4 @@
-package com.phithang.mysocialnetwork.Config;
+package com.phithang.mysocialnetwork.config;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

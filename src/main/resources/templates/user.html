@@ -13,27 +13,21 @@
             <img
                     id="main-avatar"
                     src="https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg"
-                    class="me-2 rounded-circle" style="width: 100px; height: 100px; object-fit: cover;"
+                    class="me-2 rounded-circle"
+                    style="width: 100px; height: 100px; object-fit: cover;"
             />
             <div class="flex-grow-1">
                 <h3 id="main-name" class="mb-1"></h3>
-                <h6 id="main-about" class="text-muted mb-0"></h6>
+                <h6 id="main-about" class="text-muted text-break"></h6>
+                <div class="d-flex">
+                    <button id="inbox-btn" class="btn btn-primary me-2">Nhắn tin</button>
+                    <button id="friend-request-btn" class="btn btn-primary" onclick="sendFriendRequest()">Kết bạn</button>
+                </div>
             </div>
-            <button
-                    id="inbox-btn"
-                    class="btn btn-primary"
-            >
-                Nhắn tin
-            </button>
-            <!-- Nút Kết Bạn -->
-            <button
-                    id="friend-request-btn"
-                    class="btn btn-primary"
-                    onclick="sendFriendRequest()"
-            >
-                Kết bạn
-            </button>
         </div>
+
+
+
 
         <!-- Sub Navbar -->
         <ul class="nav nav-tabs" id="profileTabs" role="tablist">
@@ -100,11 +94,11 @@
                             <div class="mb-3">
                                 <label class="form-label">Giới tính</label>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" class="form-check-input" id="genderMale" name="gender" value="Male" />
+                                    <input type="radio" class="form-check-input" id="genderMale" name="gender" value="Male" disabled  />
                                     <label class="form-check-label" for="genderMale">Nam </label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" class="form-check-input" id="genderFemale" name="gender" value="Female" />
+                                    <input type="radio" class="form-check-input" id="genderFemale" name="gender" value="Female" disabled />
                                     <label class="form-check-label" for="genderFemale">Nữ</label>
                                 </div>
                             </div>

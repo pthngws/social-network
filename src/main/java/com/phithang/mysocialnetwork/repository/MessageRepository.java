@@ -13,12 +13,16 @@ import java.util.Map;
 public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
     @Query("SELECT DISTINCT " +
             "COALESCE(u.id, c.sender.id) as userID, " +
-            "COALESCE(CONCAT(u.firstname, ' ', u.lastname), CAST(c.sender.id AS string)) as name " +
+            "COALESCE(CONCAT(u.firstname, ' ', u.lastname), CAST(c.sender.id AS string)) as name, " +
+            "MAX(c.timestamp) as lastMessageTime " +
             "FROM MessageEntity c " +
-            "LEFT JOIN UserEntity u ON c.sender.id = u.id OR c.receiver.id = u.id " +
+            "LEFT JOIN UserEntity u ON (c.sender.id = u.id OR c.receiver.id = u.id) " +
             "WHERE (c.sender.id = :userId OR c.receiver.id = :userId) " +
-            "AND (u.id != :userId OR u.id IS NULL)")
+            "AND (u.id != :userId OR u.id IS NULL) " +
+            "GROUP BY COALESCE(u.id, c.sender.id), COALESCE(CONCAT(u.firstname, ' ', u.lastname), CAST(c.sender.id AS string)) " +
+            "ORDER BY lastMessageTime DESC")
     List<Map<String, Object>> findDistinctParticipantsByUserId(@Param("userId") Long userId);
+
 
 
 

@@ -4,7 +4,7 @@ fetchPosts();
 
 // Function to fetch posts
 function fetchPosts() {
-    fetch('http://localhost:8080/posts', {
+    fetch('/posts', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -31,7 +31,7 @@ const token = localStorage.getItem("token");  // Hoặc lấy token từ nơi b�
 
 if (token) {
     // Gửi request tới API với token
-    fetch("http://localhost:8080/user/profile", {
+    fetch("/user/profile", {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,  // Thêm token vào header

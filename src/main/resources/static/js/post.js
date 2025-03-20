@@ -39,7 +39,7 @@ function createPostElement(post) {
         <div class="post-header d-flex align-items-center mb-3">
             <img src="${post.imageUrl}" alt="User" class="me-2 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
             <div>
-                <a href='http://localhost:8080/${post.authorId}' style="color: black; font-weight: bold; text-decoration: none;">${post.authorName}</a>
+                <a href='/${post.authorId}' style="color: black; font-weight: bold; text-decoration: none;">${post.authorName}</a>
                 <br>
                 <small class="text-muted">${timeDisplay}</small>
             </div>
@@ -51,11 +51,48 @@ function createPostElement(post) {
                     ${post.authorId == localStorage.getItem("userId") ? `
                     <li><button class="dropdown-item edit-post" data-id="${post.id}">Chỉnh sửa</button></li>
                     <li><button class="dropdown-item delete-post" data-id="${post.id}">Xóa</button></li>
-                ` : '<li><button class="dropdown-item report-post" data-id="${post.id}">Báo cáo</button></li>'}
+                ` : `<li><button class="dropdown-item report-post" data-id="${post.id}">Báo cáo</button></li>`}
                 
                 </ul>
             </div>
         </div>
+
+<!-- Modal chọn lý do báo cáo -->
+<div class="modal fade" id="reportPostModal" tabindex="-1" aria-labelledby="reportPostModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reportPostModalLabel">Báo cáo bài viết</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="reportForm">
+          <input type="hidden" id="reportPostId">
+          <div class="mb-3">
+            <label class="form-label">Chọn lý do báo cáo:</label>
+            <div>
+              <input type="radio" name="reportReason" value="spam" id="reasonSpam">
+              <label for="reasonSpam">Spam</label>
+            </div>
+            <div>
+              <input type="radio" name="reportReason" value="violence" id="reasonViolence">
+              <label for="reasonViolence">Bạo lực</label>
+            </div>
+            <div>
+              <input type="radio" name="reportReason" value="harassment" id="reasonHarassment">
+              <label for="reasonHarassment">Quấy rối</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-primary" id="submitReport" onclick="report()">Gửi báo cáo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
         <div class="post-content">
             <h2>${post.content}</h2>
@@ -88,7 +125,7 @@ function handleLikeButton(post, postElement) {
     likeBtn.addEventListener("click", function () {
         const postId = likeBtn.getAttribute("data-post-id");
 
-        fetch(`http://localhost:8080/like/${postId}`, {
+        fetch(`/like/${postId}`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -117,7 +154,6 @@ function handleLikeButton(post, postElement) {
         })
 
 }
-
 
 // Xử lý sự kiện Comment
 function handleCommentButton(post, postElement) {
@@ -165,7 +201,7 @@ function handleCommentButton(post, postElement) {
                 );
             }
 
-            fetch(`http://localhost:8080/comment/${post.id}`, {
+            fetch(`/comment/${post.id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -194,7 +230,7 @@ function handleCommentButton(post, postElement) {
     });
 }
 function fetchComments(postId, commentBox) {
-    fetch(`http://localhost:8080/comment/${postId}`, {
+    fetch(`/comment/${postId}`, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -241,9 +277,9 @@ function fetchComments(postId, commentBox) {
                             <div class="d-flex align-items-start">
                                 <img src="${comment.imageUrl}" alt="${comment.authorName}" class="me-2 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                                 <div class="bg-light rounded-3 p-2" style="flex-grow: 1; max-width: calc(100% - 50px);">
-                                    <a href='http://localhost:8080/${comment.authorId}' class="d-block" style="font-size: 0.95rem; color: black; font-weight: bold; text-decoration: none;">${comment.authorName}</a>
+                                    <a href='/${comment.authorId}' class="d-block" style="font-size: 0.95rem; color: black; font-weight: bold; text-decoration: none;">${comment.authorName}</a>
                                     <p class="mb-1" style="font-size: 0.9rem; line-height: 1.4;">
-                                        ${comment.replyAuthorName ? `<a href="http://localhost:8080/${comment.replyAuthorId}" style="font-weight: bold; text-decoration: none;" class="text-primary">${comment.replyAuthorName}</a> ` : ""}
+                                        ${comment.replyAuthorName ? `<a href="/${comment.replyAuthorId}" style="font-weight: bold; text-decoration: none;" class="text-primary">${comment.replyAuthorName}</a> ` : ""}
                                         ${comment.content}
                                     </p>
                                 </div>
@@ -261,7 +297,7 @@ function fetchComments(postId, commentBox) {
                             if (confirm("Bạn có chắc chắn muốn xóa bình luận này không?")) {
                                 const commentId = deleteBtn.getAttribute("data-comment-id");
 
-                                fetch(`http://localhost:8080/comment/${commentId}`, {
+                                fetch(`/comment/${commentId}`, {
                                     method: "DELETE",
                                     headers: {
                                         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -317,7 +353,7 @@ function fetchComments(postId, commentBox) {
                                         return;
                                     }
 
-                                    fetch(`http://localhost:8080/comment/${postId}`, {
+                                    fetch(`/comment/${postId}`, {
                                         method: "POST",
                                         headers: {
                                             "Content-Type": "application/json",
@@ -511,7 +547,7 @@ document.getElementById("postSubmitBtn").addEventListener("click", function () {
 
 // Hàm gửi yêu cầu tạo bài viết
 function createPost(postData) {
-    fetch("http://localhost:8080/post", {
+    fetch("/post", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -548,6 +584,8 @@ document.addEventListener("click", function (event) {
     }
 });
 
+
+
 document.getElementById("saveEditPost").addEventListener("click", function () {
     const postId = document.getElementById("editPostId").value;
     const newContent = document.getElementById("editPostContent").value;
@@ -574,3 +612,59 @@ document.getElementById("saveEditPost").addEventListener("click", function () {
         })
         .catch(error => console.error("Lỗi:", error));
 });
+document.addEventListener("click", function (event) {
+    // Khi nhấn vào nút Báo cáo
+    if (event.target.classList.contains("report-post")) {
+        const postId = event.target.getAttribute("data-id");
+
+        // Đưa postId vào hidden input trong modal
+        document.getElementById("reportPostId").value = postId;
+
+        // Hiển thị modal
+        const reportModal = new bootstrap.Modal(document.getElementById("reportPostModal"));
+        reportModal.show();
+    }
+});
+
+// Khi nhấn nút Gửi báo cáo
+function report() {
+    const postId = document.getElementById("reportPostId").value;
+    const reason = document.querySelector('input[name="reportReason"]:checked');
+    console.log("")
+    if (reason) {
+        const reasonValue = reason.value;
+
+        // Tạo đối tượng reportDto
+        const reportDto = {
+            title: reasonValue,
+            postId: postId
+        };
+
+        // Gửi request lên server
+        fetch('/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(reportDto)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    alert('Báo cáo thành công!');
+                } else {
+                    alert('Báo cáo thất bại!');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại sau!');
+            });
+
+        // Đóng modal sau khi gửi báo cáo
+        const reportModal = bootstrap.Modal.getInstance(document.getElementById("reportPostModal"));
+        reportModal.hide();
+    } else {
+        alert('Vui lòng chọn lý do báo cáo.');
+    }
+};

@@ -3,7 +3,7 @@ $(document).ready(function () {
 
     if (token) {
         // Gửi request tới API với token
-        fetch("http://localhost:8080/user/profile", {
+        fetch("/user/profile", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,  // Thêm token vào header
@@ -59,7 +59,7 @@ $(document).ready(function () {
         formData.append("gender", $("input[name='gender']:checked").val());
 
         // Gửi request với fetch
-        fetch("http://localhost:8080/user/profile/update", {
+        fetch("/user/profile/update", {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`, // Thêm token vào header
@@ -89,7 +89,7 @@ $(document).ready(function () {
     // Hàm lấy danh sách bạn bè
     function loadFriendsList() {
         $.ajax({
-            url: 'http://localhost:8080/friendship/all',
+            url: '/friendship/all',
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -108,7 +108,7 @@ $(document).ready(function () {
                                     style="width: 50px; height: 50px; margin-right: 15px;"
                                 />
                                 <div>
-                                    <a href="http://localhost:8080/${user.id}" style="color: black; font-weight: bold; text-decoration: none;" >${user.firstName} ${user.lastName}</a><br />
+                                    <a href="/${user.id}" style="color: black; font-weight: bold; text-decoration: none;" >${user.firstName} ${user.lastName}</a><br />
                                     <small class="text-muted">${user.about || "Không có thông tin"}</small>
                                 </div>
                             </div>
@@ -137,7 +137,7 @@ $(document).ready(function () {
         const friendId = $(this).data('id');
         if (confirm('Bạn có chắc chắn muốn xóa bạn này?')) {
             $.ajax({
-                url: 'http://localhost:8080/friendship/cancel',
+                url: '/friendship/cancel',
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -159,7 +159,7 @@ fetchPosts();
 
 // Function to fetch posts
 function fetchPosts() {
-    fetch("http://localhost:8080/myposts", {
+    fetch("/myposts", {
         method: "GET",
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

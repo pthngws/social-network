@@ -1,4 +1,4 @@
-package com.phithang.mysocialnetwork.Config;
+package com.phithang.mysocialnetwork.config;
 
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.repository.UserRepository;

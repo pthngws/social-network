@@ -10,45 +10,40 @@ function toggleChatPopup() {
     chatPopup.css("display", chatPopup.css("display") === "block" ? "none" : "block");
     if (chatPopup.css("display") === "block")
         $("#page-title").text("Tin Nhắn");
-        loadCustomerList();
-        $("#customer-list").show();
+        loadFriendList();
+        $("#friend-list").show();
         $("#chat-room").hide();
 }
 
-async function loadCustomerList() {
+async function loadFriendList() {
     try {
         // Gửi yêu cầu lấy danh sách khách hàng
-        const customerData = await $.ajax({
-            url: `/getCustomerList/${SENDERID}`,
+        const friendData = await $.ajax({
+            url: `/getFriendList/${SENDERID}`,
             type: 'GET'
         });
 
         // Lấy phần tử danh sách
-        const customerListItems = $("#customer-list-items");
+        const friendListItems = $("#friend-list-items");
         // Xóa nội dung cũ
-        customerListItems.empty();
+        friendListItems.empty();
 
         // Đảo ngược và thêm dữ liệu khách hàng vào danh sách
-        customerData.reverse().forEach(customer => {
+        friendData.forEach(friend => {
             const listItem = $("<li>")
-                .text(`${customer.name}`) // Hiển thị tên
-                .click(() => openChat(customer.userID, customer.name)); // Mở chat khi click
-            customerListItems.append(listItem);
+                .text(`${friend.name}`) // Hiển thị tên
+                .click(() => openChat(friend.userID, friend.name)); // Mở chat khi click
+            friendListItems.append(listItem);
         });
     } catch (error) {
-        console.error("Error loading customer list:", error);
+        console.error("Error loading friend list:", error);
     }
 }
-document.getElementById("inbox-btn").addEventListener("click",function (){
-    toggleChatPopup();
-    const name = document.getElementById("main-name").textContent;
-    const url = window.location.href;
-    openChat(url.substring(url.lastIndexOf("/") + 1), name);
-})
-function openChat(customerId,customerName) {
-    RECEIVERID = customerId;
-    $("#page-title").text(customerName);
-    $("#customer-list").hide();
+
+function openChat(friendId,friendName) {
+    RECEIVERID = friendId;
+    $("#page-title").text(friendName);
+    $("#friend-list").hide();
     $("#chat-room").show();
     connect();
     loadMessages();
@@ -99,12 +94,11 @@ function showMessage(message) {
     }
 
     const messageBubble = $("<div>")
-        .addClass("message-bubble")
+        .addClass("message-bubble mt-1")
         .html(`<span>${message.contentMessage}</span> <div class="message-time">${formattedTime}</div>`);
 
 
     if (message.senderID == SENDERID) {
-        console.log("HHHHHHHH")
         messageElement.addClass("sender");
     } else {
         messageElement.addClass("receiver");

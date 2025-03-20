@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (token) {
         // Gửi request tới API với token
-        fetch("http://localhost:8080/user/profile", {
+        fetch("/user/profile", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,  // Thêm token vào header
@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const friendRequestBtn = document.getElementById("friend-request-btn");
     const url = window.location.href;
     const userId = url.substring(url.lastIndexOf("/") + 1);
+    if (userId == localStorage.getItem("userId")) {
+        window.location.replace('/profile');
+    }
 
     fetchPosts();
 
@@ -41,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         // Gọi API thông tin người dùng
-        fetch(`http://localhost:8080/user/${userId}`, {
+        fetch(`/user/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -73,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error("Lỗi khi lấy thông tin người dùng:", error));
 // Gọi API bài viết
 
-        fetch(`http://localhost:8080/userpost/${userId}`, {
+        fetch(`/userpost/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -138,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 // Hàm chấp nhận yêu cầu kết bạn
     function acceptFriendRequest() {
-        fetch("http://localhost:8080/friendship/accept", {
+        fetch("/friendship/accept", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -159,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Hàm gửi yêu cầu kết bạn
     function sendFriendRequest() {
-        fetch("http://localhost:8080/friendship/add", {
+        fetch("/friendship/add", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -180,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Hàm hủy yêu cầu kết bạn hoặc hủy bạn bè
     function cancelFriendRequest() {
-        fetch("http://localhost:8080/friendship/cancel", {
+        fetch("/friendship/cancel", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -200,6 +203,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-
+document.getElementById("inbox-btn").addEventListener("click",function (){
+    toggleChatPopup();
+    const name = document.getElementById("main-name").textContent;
+    const url = window.location.href;
+    openChat(url.substring(url.lastIndexOf("/") + 1), name);
+})
 
 // Gọi API bài viết

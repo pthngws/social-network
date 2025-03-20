@@ -1,4 +1,4 @@
-package com.phithang.mysocialnetwork.Config;
+package com.phithang.mysocialnetwork.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;

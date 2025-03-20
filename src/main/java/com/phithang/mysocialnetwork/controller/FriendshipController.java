@@ -8,6 +8,8 @@ import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IFriendshipService;
 import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,107 +25,120 @@ public class FriendshipController {
     private IFriendshipService friendshipService;
 
     @GetMapping("/requests")
-    public ResponseDto<List<FriendshipDto>> getFriendshipRequests() {
-        List<FriendshipEntity> friendshipEntities= friendshipService.findALlRequest();
+    public ResponseEntity<ResponseDto<List<FriendshipDto>>> getFriendshipRequests() {
+        List<FriendshipEntity> friendshipEntities = friendshipService.findALlRequest();
         List<FriendshipDto> friendshipDtos = new ArrayList<>();
-        for(FriendshipEntity friendshipEntity:friendshipEntities) {
+        for (FriendshipEntity friendshipEntity : friendshipEntities) {
             friendshipDtos.add(new FriendshipDto(friendshipEntity));
         }
-        return new ResponseDto<>(200,friendshipDtos,"Success");
+        return ResponseEntity.ok(new ResponseDto<>(200, friendshipDtos, "Success"));
     }
+
     @GetMapping("/all")
-    public ResponseDto<List<FriendshipDto>> getAllFriendships() {
-        List<FriendshipEntity> friendshipEntities= friendshipService.findAllFriends();
+    public ResponseEntity<ResponseDto<List<FriendshipDto>>> getAllFriendships() {
+        List<FriendshipEntity> friendshipEntities = friendshipService.findAllFriends();
         List<FriendshipDto> friendshipDtos = new ArrayList<>();
-        for(FriendshipEntity friendshipEntity:friendshipEntities) {
-            if(friendshipEntity.getUser1().getEmail().equals(SecurityContextHolder.getContext().getAuthentication().getName())) {
+        for (FriendshipEntity friendshipEntity : friendshipEntities) {
+            if (friendshipEntity.getUser1().getEmail().equals(SecurityContextHolder.getContext().getAuthentication().getName())) {
                 friendshipEntity.setUser1(friendshipEntity.getUser2());
             }
             friendshipDtos.add(new FriendshipDto(friendshipEntity));
         }
-        return new ResponseDto<>(200,friendshipDtos,"Success");
+        return ResponseEntity.ok(new ResponseDto<>(200, friendshipDtos, "Success"));
     }
 
     @PostMapping("/add")
-    public ResponseDto addFriendship(@RequestBody FriendshipRequestDto receiverId) {
+    public ResponseEntity<ResponseDto<Void>> addFriendship(@RequestBody FriendshipRequestDto receiverId) {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             UserEntity sender = userService.findUserByEmail(authentication.getName());
             UserEntity receiver = userService.findById(receiverId.getReceiverId());
+
             if (sender == null || receiver == null) {
-                return new ResponseDto(400, "Sender or Receiver not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Sender or Receiver not found!"));
             }
 
             if (sender.equals(receiver)) {
-                return new ResponseDto(400, "You cannot send a friend request to yourself!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "You cannot send a friend request to yourself!"));
             }
 
             FriendshipEntity friendshipEntity = friendshipService.findBySenderAndReceiver(sender, receiver);
             if (friendshipEntity != null) {
-                return new ResponseDto(400, "Friendship already exists!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Friendship already exists!"));
             }
-            friendshipService.save(sender,receiver);
 
-            return new ResponseDto(200, "Friend request sent successfully!", null);
+            friendshipService.save(sender, receiver);
+            return ResponseEntity.ok(new ResponseDto<>(200, null, "Friend request sent successfully!"));
         } catch (Exception e) {
-            return new ResponseDto(500, "An unexpected error occurred: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseDto<>(500, null, "An unexpected error occurred: " + e.getMessage()));
         }
     }
 
     @PostMapping("/accept")
-    public ResponseDto acceptFriendship(@RequestBody FriendshipRequestDto friendshipDto) {
+    public ResponseEntity<ResponseDto<Void>> acceptFriendship(@RequestBody FriendshipRequestDto friendshipDto) {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             String receiverEmail = authentication.getName();
             UserEntity receiver = userService.findUserByEmail(receiverEmail);
 
             if (receiver == null) {
-                return new ResponseDto(400, "Receiver not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Receiver not found!"));
             }
 
             UserEntity sender = userService.findById(friendshipDto.getReceiverId());
             if (sender == null) {
-                return new ResponseDto(400, "Sender not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Sender not found!"));
             }
 
             FriendshipEntity friendshipEntity = friendshipService.findByUser1AndUser2(sender, receiver);
             if (friendshipEntity == null) {
-                return new ResponseDto(400, "Friend request not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Friend request not found!"));
             }
-            friendshipService.accept(sender,receiver);
 
-            return new ResponseDto(200, "Friend request accepted successfully!", null);
+            friendshipService.accept(sender, receiver);
+            return ResponseEntity.ok(new ResponseDto<>(200, null, "Friend request accepted successfully!"));
         } catch (Exception e) {
-            return new ResponseDto(500, "An unexpected error occurred: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseDto<>(500, null, "An unexpected error occurred: " + e.getMessage()));
         }
     }
 
     @PostMapping("/cancel")
-    public ResponseDto cancelFriendship(@RequestBody FriendshipRequestDto friendshipDto) {
+    public ResponseEntity<ResponseDto<Void>> cancelFriendship(@RequestBody FriendshipRequestDto friendshipDto) {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             String receiverEmail = authentication.getName();
             UserEntity receiver = userService.findUserByEmail(receiverEmail);
 
             if (receiver == null) {
-                return new ResponseDto(400, "Receiver not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Receiver not found!"));
             }
 
             UserEntity sender = userService.findById(friendshipDto.getReceiverId());
             if (sender == null) {
-                return new ResponseDto(400, "Sender not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Sender not found!"));
             }
 
             FriendshipEntity friendshipEntity = friendshipService.findBySenderAndReceiver(sender, receiver);
             if (friendshipEntity == null) {
-                return new ResponseDto(400, "Friend request not found!", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseDto<>(400, null, "Friend request not found!"));
             }
 
             friendshipService.cancelRequest(friendshipEntity);
-
-            return new ResponseDto(200, "Friend request cancelled successfully!", null);
+            return ResponseEntity.ok(new ResponseDto<>(200, null, "Friend request cancelled successfully!"));
         } catch (Exception e) {
-            return new ResponseDto(500, "An unexpected error occurred: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseDto<>(500, null, "An unexpected error occurred: " + e.getMessage()));
         }
     }
 }

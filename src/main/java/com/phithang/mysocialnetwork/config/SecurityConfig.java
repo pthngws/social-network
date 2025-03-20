@@ -1,4 +1,5 @@
-package com.phithang.mysocialnetwork.Config;
+package com.phithang.mysocialnetwork.config;
+import com.phithang.mysocialnetwork.service.Impl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.List;
@@ -38,35 +38,51 @@ public class SecurityConfig {
     };
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login", "/auth/introspect", "/auth/logout","/**", "/home","/search/**","/auth/signup","/css/**","/js/**","/images/**","/ws/**"
+            "/auth/login",
+            "/auth/introspect",
+            "/auth/logout",
+            "/**",
+            "/home",
+            "/search/**",
+            "/auth/signup",
+            "/css/**",
+            "/js/**",
+            "/images/**",
+            "/ws/**"
     };
+    private final String[] ADMIN_ENDPOINTS = {};
+    private final String[] USER_ENDPOINTS = {};
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, JwtDecoder jwtDecoder) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, JwtDecoder jwtDecoder, JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
         httpSecurity
                 .authorizeHttpRequests(request -> request
-                .requestMatchers(PUBLIC_ENDPOINTS)
-                .permitAll()
-                .requestMatchers(HttpMethod.GET,"/**")
-                .permitAll()
-                .anyRequest()
-                .authenticated());
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
+                        .requestMatchers(USER_ENDPOINTS).hasRole("USER")
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter)))
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/auth/oauth2-login", true)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(new CustomOAuth2UserService()) // Hỗ trợ cả Google và Facebook
+                        )
+                )
 
-        httpSecurity.oauth2ResourceServer(resourceServer -> resourceServer
-                .jwt(jwt -> jwt
-                        .decoder(jwtDecoder())
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter())));
-
-
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+                .formLogin(AbstractHttpConfigurer::disable) // Tắt trang login mặc định
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();
     }
 
+
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
+        configuration.setAllowedOrigins(List.of("http://172.172.29.247:8080")); // Đổi thành IP frontend của bạn
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
 
@@ -76,18 +92,7 @@ public class SecurityConfig {
         return source;
     }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("*");
-        corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addAllowedHeader("*");
 
-        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
-        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
-
-        return new CorsFilter(urlBasedCorsConfigurationSource);
-    }
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {

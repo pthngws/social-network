@@ -27,15 +27,11 @@ public class MessageController {
     @Autowired
     private IMessageService chatService;
 
-    @Autowired
-    private IUserService userService;
-
-
-    @GetMapping("/getCustomerList/{id}")
+    @GetMapping("/getFriendList/{id}")
     public ResponseEntity<List<Map<String, Object>>> getCustomerList(@PathVariable Long id) {
 
-        List<Map<String, Object>> customers = chatService.findDistinctParticipantsByUserId(id); // receiverID = 1 (cố định hoặc từ token)
-        return ResponseEntity.ok(customers);
+        List<Map<String, Object>> friends = chatService.findDistinctParticipantsByUserId(id); // receiverID = 1 (cố định hoặc từ token)
+        return ResponseEntity.ok(friends);
     }
 
     @MessageMapping("/sendMessage")
