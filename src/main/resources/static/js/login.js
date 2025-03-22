@@ -30,13 +30,13 @@ $(document).ready(function () {
             const response = await fetch("http://localhost:8080/auth/oauth2-login", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include"
+                credentials: "include" // Gửi cookie
             });
             const data = await response.json();
             if (data.status === 200 && data.data && data.data.token) {
                 localStorage.setItem("token", data.data.token);
-                localStorage.setItem("userId", data.data.id);
                 localStorage.setItem("email", data.data.email);
+                localStorage.setItem("userId",data.data.id);
                 window.location.href = "/home";
             } else {
                 $("#login-error-message").text(data.message || "Đăng nhập OAuth thất bại.");
@@ -62,13 +62,14 @@ $(document).ready(function () {
             const response = await fetch("/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password }),
+                credentials: "include" // Gửi cookie
             });
             const data = await response.json();
             if (data.status === 200 && data.data && data.data.token) {
                 localStorage.setItem("token", data.data.token);
-                localStorage.setItem("userId", data.data.id);
                 localStorage.setItem("email", data.data.email);
+                localStorage.setItem("userId",data.data.id)
                 window.location.href = "/home";
             } else {
                 $("#login-error-message").text(data.message || "Đăng nhập thất bại.");
@@ -285,6 +286,64 @@ $(document).ready(function () {
             $("#reset-error-message").text("Đã xảy ra lỗi, vui lòng thử lại.");
         }
     });
+
+    // Xử lý refresh token
+    async function refreshToken() {
+        try {
+            const response = await fetch("/auth/refresh-token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include" // Gửi cookie
+            });
+            const data = await response.json();
+            if (data.status === 200 && data.data) {
+                localStorage.setItem("token", data.data);
+                return data.data;
+            } else {
+                localStorage.clear();
+                window.location.href = "/login";
+                return null;
+            }
+        } catch (error) {
+            console.error("Lỗi refresh token:", error);
+            localStorage.clear();
+            window.location.href = "/login";
+            return null;
+        }
+    }
+
+    // Xử lý gọi API bảo mật
+    async function callSecureApi(endpoint, method = "GET", body = null) {
+        let token = localStorage.getItem("token");
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+            const config = {
+                method,
+                headers,
+                credentials: "include" // Gửi cookie
+            };
+            if (body) config.body = JSON.stringify(body);
+
+            const response = await fetch(endpoint, config);
+            if (response.status === 401) { // Token hết hạn
+                token = await refreshToken();
+                if (token) {
+                    config.headers["Authorization"] = `Bearer ${token}`;
+                    const retryResponse = await fetch(endpoint, config);
+                    return await retryResponse.json();
+                }
+                throw new Error("Unable to refresh token");
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Lỗi gọi API:", error);
+            throw error;
+        }
+    }
+
 
     // Hàm kiểm tra email hợp lệ
     function isValidEmail(email) {

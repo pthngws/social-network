@@ -11,5 +11,4 @@ public class NotifyResponse {
     private String content;
     private int isRead;
     private LocalDateTime date;
-    private Long postId;
 }

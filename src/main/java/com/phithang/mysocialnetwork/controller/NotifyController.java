@@ -33,7 +33,6 @@ public class NotifyController {
             response.setContent(notification.getContent());
             response.setDate(notification.getTimestamp());
             response.setIsRead(notification.getIsread());
-            response.setPostId(notification.getPost().getId());
             return response;
         }).collect(Collectors.toList());
 

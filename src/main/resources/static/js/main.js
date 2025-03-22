@@ -141,6 +141,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 3000); // 3000ms = 3 giây
     }
 
+    $("#groupsToggle").click(function (event) {
+        event.preventDefault();
+        $("#groupsMenu").toggle();
+    });
+
+    // Ẩn menu khi click ra ngoài
+    document.addEventListener("click", function (event) {
+        const toggle = $("#groupsToggle")[0];
+        const menu = $("#groupsMenu")[0];
+        if (!toggle.contains(event.target) && !menu.contains(event.target)) {
+            $("#groupsMenu").hide();
+        }
+    });
+
     // Toggle menu thông báo
     $("#notificationsToggle").click(function (event) {
         event.preventDefault();
@@ -249,8 +263,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Đăng xuất
 function logout() {
-    localStorage.removeItem("token");
-    window.location.href = "/";
+    try {
+        const response = fetch("/auth/revoke-token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            },
+            credentials: "include" // Gửi cookie
+        });
+        const data = response.json();
+        if (data.status === 200) {
+            localStorage.clear();
+            window.location.href = "/";
+        } else {
+            $("#login-error-message").text(data.message || "Không thể đăng xuất.");
+        }
+    } catch (error) {
+        console.error("Lỗi revoke token:", error);
+        localStorage.clear();
+        window.location.href = "/";
+    }
 }
 
 // Kiểm tra token

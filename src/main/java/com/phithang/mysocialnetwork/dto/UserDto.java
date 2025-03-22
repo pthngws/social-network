@@ -16,6 +16,7 @@ public class UserDto {
     private String email;
     private String role;
     private String token;
+    private String refreshToken;
     public UserDto(UserEntity userEntity) {
         this.id = userEntity.getId();
         this.firstname = userEntity.getFirstname();

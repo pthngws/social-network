@@ -38,7 +38,6 @@ public class NotificationService implements INotificationService {
         response.setContent(notification.getContent());
         response.setDate(notification.getTimestamp());
         response.setIsRead(notification.getIsread());
-        response.setPostId(notification.getPost() != null ? notification.getPost().getId() : null);
 
         // Sử dụng email thay vì ID
         String destination = "/topic/notifications/" + notification.getUser().getEmail();

@@ -1,6 +1,7 @@
 package com.phithang.mysocialnetwork.service;
 
 import com.nimbusds.jose.JOSEException;
+import com.phithang.mysocialnetwork.dto.RefreshTokenDto;
 import com.phithang.mysocialnetwork.dto.request.IntrospectRequest;
 import com.phithang.mysocialnetwork.dto.request.LoginRequest;
 import com.phithang.mysocialnetwork.dto.request.SignupRequest;
@@ -19,6 +20,13 @@ public interface IAuthenticateService {
     UserDto oauth2Login(OidcUser oidcUser, OAuth2User oAuth2User) throws JOSEException;
 
     String generateToken(UserEntity userEntity) throws JOSEException;
+
+    String generateRefreshToken(UserEntity userEntity);
+
+    String refreshAccessToken(RefreshTokenDto refreshTokenDto) throws JOSEException;
+
+
+    void revokeRefreshToken();
 
     UserDto login(LoginRequest loginRequest) throws JOSEException;
 
