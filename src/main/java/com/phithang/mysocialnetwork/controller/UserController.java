@@ -1,7 +1,7 @@
 package com.phithang.mysocialnetwork.controller;
 
-import com.phithang.mysocialnetwork.dto.request.UpdateProfileDto;
-import com.phithang.mysocialnetwork.dto.response.ResponseDto;
+import com.phithang.mysocialnetwork.dto.request.UpdateProfileRequest;
+import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.entity.FriendshipEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IFriendshipService;
@@ -29,12 +29,12 @@ public class UserController {
     private IFriendshipService friendshipService;
 
     @GetMapping("/search")
-    public ResponseEntity<ResponseDto<List<UpdateProfileDto>>> searchUsers(@RequestParam("name") String name) {
+    public ResponseEntity<ApiResponse<List<UpdateProfileRequest>>> searchUsers(@RequestParam("name") String name) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity currentUser = userService.findUserByEmail(authentication.getName());
 
         List<UserEntity> users = userService.findByFirstnameOrLastnameContaining(name);
-        List<UpdateProfileDto> userDtos = new ArrayList<>();
+        List<UpdateProfileRequest> userDtos = new ArrayList<>();
 
         for (UserEntity userEntity : users) {
             if (!userEntity.getId().equals(currentUser.getId())) {
@@ -43,18 +43,18 @@ public class UserController {
                 if (userEntity.getBirthday() == null)
                     userEntity.setBirthday(new Date());
 
-                UpdateProfileDto updateProfileDto = new UpdateProfileDto(userEntity);
-                updateProfileDto.setFriendStatus(friendStatus);
-                userDtos.add(updateProfileDto);
+                UpdateProfileRequest updateProfileRequest = new UpdateProfileRequest(userEntity);
+                updateProfileRequest.setFriendStatus(friendStatus);
+                userDtos.add(updateProfileRequest);
             }
         }
 
-        ResponseDto<List<UpdateProfileDto>> responseDto = new ResponseDto<>(200, userDtos, "Search users successful!");
-        return ResponseEntity.ok(responseDto);
+        ApiResponse<List<UpdateProfileRequest>> apiResponse = new ApiResponse<>(200, userDtos, "Search users successful!");
+        return ResponseEntity.ok(apiResponse);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto<UpdateProfileDto>> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<ApiResponse<UpdateProfileRequest>> getUserById(@PathVariable("id") Long id) {
         UserEntity userEntity = userService.findById(id);
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity currentUser = userService.findUserByEmail(authentication.getName());
@@ -62,40 +62,40 @@ public class UserController {
         if (userEntity != null) {
             String friendStatus = getFriendStatus(userEntity, currentUser);
 
-            UpdateProfileDto updateProfileDto = new UpdateProfileDto(userEntity);
-            updateProfileDto.setFriendStatus(friendStatus);
+            UpdateProfileRequest updateProfileRequest = new UpdateProfileRequest(userEntity);
+            updateProfileRequest.setFriendStatus(friendStatus);
 
-            ResponseDto<UpdateProfileDto> responseDto = new ResponseDto<>(200, updateProfileDto, "Get user successful!");
-            return ResponseEntity.ok(responseDto);
+            ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(200, updateProfileRequest, "Get user successful!");
+            return ResponseEntity.ok(apiResponse);
         }
-        ResponseDto<UpdateProfileDto> responseDto = new ResponseDto<>(404, null, "User not found!");
-        return ResponseEntity.status(404).body(responseDto);
+        ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(404, null, "User not found!");
+        return ResponseEntity.status(404).body(apiResponse);
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<ResponseDto<UpdateProfileDto>> getProfile() {
+    public ResponseEntity<ApiResponse<UpdateProfileRequest>> getProfile() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity userEntity = userService.findUserByEmail(authentication.getName());
 
         if (userEntity != null) {
-            ResponseDto<UpdateProfileDto> responseDto = new ResponseDto<>(200, new UpdateProfileDto(userEntity), "Get profile successful!");
-            return ResponseEntity.ok(responseDto);
+            ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(200, new UpdateProfileRequest(userEntity), "Get profile successful!");
+            return ResponseEntity.ok(apiResponse);
         }
-        ResponseDto<UpdateProfileDto> responseDto = new ResponseDto<>(404, null, "Profile not found!");
-        return ResponseEntity.status(404).body(responseDto);
+        ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(404, null, "Profile not found!");
+        return ResponseEntity.status(404).body(apiResponse);
     }
 
     @PutMapping("/profile/update")
-    public ResponseEntity<ResponseDto<UpdateProfileDto>> updateProfile(
-            @ModelAttribute UpdateProfileDto updateProfileDto,
+    public ResponseEntity<ApiResponse<UpdateProfileRequest>> updateProfile(
+            @ModelAttribute UpdateProfileRequest updateProfileRequest,
             @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile) {
 
-        if (userService.updateProfile(updateProfileDto, avatarFile)) {
-            ResponseDto<UpdateProfileDto> responseDto = new ResponseDto<>(200, updateProfileDto, "Update profile successful!");
-            return ResponseEntity.ok(responseDto);
+        if (userService.updateProfile(updateProfileRequest, avatarFile)) {
+            ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(200, updateProfileRequest, "Update profile successful!");
+            return ResponseEntity.ok(apiResponse);
         }
-        ResponseDto<UpdateProfileDto> responseDto = new ResponseDto<>(400, null, "Update profile failed!");
-        return ResponseEntity.badRequest().body(responseDto);
+        ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(400, null, "Update profile failed!");
+        return ResponseEntity.badRequest().body(apiResponse);
     }
 
     // Helper method to get friend status

@@ -1,8 +1,8 @@
 package com.phithang.mysocialnetwork.service;
 
 import com.phithang.mysocialnetwork.dto.CommentDto;
-import com.phithang.mysocialnetwork.dto.request.PostRequestDto;
-import com.phithang.mysocialnetwork.dto.request.PostUpdateDto;
+import com.phithang.mysocialnetwork.dto.request.PostRequest;
+import com.phithang.mysocialnetwork.dto.request.PostUpdateRequest;
 import com.phithang.mysocialnetwork.entity.PostEntity;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,9 +11,9 @@ import java.util.List;
 
 public interface IPostService {
     @Transactional
-    PostEntity createPost(PostRequestDto postRequestDto) throws IOException;
+    PostEntity createPost(PostRequest postRequest) throws IOException;
     @Transactional
-    PostEntity updatePost(PostUpdateDto postRequestDto) throws IOException;
+    PostEntity updatePost(PostUpdateRequest postRequestDto) throws IOException;
 
     boolean deletePost(Long id);
 

@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseDto<T> {
+public class ApiResponse<T> {
     int status;
     T data;
     String message;
-
-
 }

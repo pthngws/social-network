@@ -5,9 +5,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.phithang.mysocialnetwork.dto.request.IntrospectDto;
-import com.phithang.mysocialnetwork.dto.request.LoginRequestDto;
-import com.phithang.mysocialnetwork.dto.request.SignupDto;
+import com.phithang.mysocialnetwork.dto.request.IntrospectRequest;
+import com.phithang.mysocialnetwork.dto.request.LoginRequest;
+import com.phithang.mysocialnetwork.dto.request.SignupRequest;
 import com.phithang.mysocialnetwork.dto.UserDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.repository.UserRepository;
@@ -16,7 +16,6 @@ import com.phithang.mysocialnetwork.service.IUserService;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
@@ -45,7 +43,7 @@ public class AuthenticateService implements IAuthenticateService {
     private UserRepository userRepository;
 
     @Override
-    public String introspectToken(IntrospectDto token) throws JOSEException, ParseException {
+    public String introspectToken(IntrospectRequest token) throws JOSEException, ParseException {
 
         JWSVerifier verifier = new MACVerifier(SECRET.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token.getToken());
@@ -101,10 +99,10 @@ public class AuthenticateService implements IAuthenticateService {
     }
 
     @Override
-    public UserDto login(LoginRequestDto loginRequestDto) throws JOSEException {
-        UserEntity userEntity = userService.findUserByEmail(loginRequestDto.getEmail());
+    public UserDto login(LoginRequest loginRequest) throws JOSEException {
+        UserEntity userEntity = userService.findUserByEmail(loginRequest.getEmail());
         if (userEntity != null) {
-            if (passwordEncoder.matches(loginRequestDto.getPassword(), userEntity.getPassword())) {
+            if (passwordEncoder.matches(loginRequest.getPassword(), userEntity.getPassword())) {
                 String token = this.generateToken(userEntity);
                 UserDto userDto = new UserDto(userEntity);
                 userDto.setToken(token);
@@ -116,7 +114,7 @@ public class AuthenticateService implements IAuthenticateService {
     }
 
     @Override
-    public boolean saveUser(SignupDto signupDto) {
+    public boolean saveUser(SignupRequest signupDto) {
         UserEntity userEntity = new UserEntity();
         userEntity = signupDto.toUserEntity();
         userEntity.setRole("CLIENT");

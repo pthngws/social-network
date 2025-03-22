@@ -3,7 +3,7 @@ package com.phithang.mysocialnetwork.service.Impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.phithang.mysocialnetwork.dto.request.PasswordDto;
-import com.phithang.mysocialnetwork.dto.request.UpdateProfileDto;
+import com.phithang.mysocialnetwork.dto.request.UpdateProfileRequest;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IUserService;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +62,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public boolean updateProfile(UpdateProfileDto updateProfileDto, MultipartFile avatarFile) {
+    public boolean updateProfile(UpdateProfileRequest updateProfileRequest, MultipartFile avatarFile) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -75,16 +74,16 @@ public class UserService implements IUserService {
                             ObjectUtils.asMap("resource_type", "image"));
                     String imageUrl = uploadResult.get("url").toString();
                     userEntity.setImageUrl(imageUrl); // Lưu URL ảnh vào database
-                } else if (updateProfileDto.getAvatar() != null) {
-                    userEntity.setImageUrl(updateProfileDto.getAvatar()); // Sử dụng URL từ DTO nếu có
+                } else if (updateProfileRequest.getAvatar() != null) {
+                    userEntity.setImageUrl(updateProfileRequest.getAvatar()); // Sử dụng URL từ DTO nếu có
                 }
 
                 // Cập nhật các thông tin khác
-                userEntity.setLastname(updateProfileDto.getLastName());
-                userEntity.setFirstname(updateProfileDto.getFirstName());
-                userEntity.setAbout(updateProfileDto.getAbout());
-                userEntity.setBirthday(java.sql.Date.valueOf(updateProfileDto.getBirthday()));
-                userEntity.setGender(updateProfileDto.getGender());
+                userEntity.setLastname(updateProfileRequest.getLastName());
+                userEntity.setFirstname(updateProfileRequest.getFirstName());
+                userEntity.setAbout(updateProfileRequest.getAbout());
+                userEntity.setBirthday(java.sql.Date.valueOf(updateProfileRequest.getBirthday()));
+                userEntity.setGender(updateProfileRequest.getGender());
 
                 userRepository.save(userEntity);
 

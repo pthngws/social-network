@@ -1,11 +1,10 @@
 package com.phithang.mysocialnetwork.controller;
 
 import com.phithang.mysocialnetwork.dto.response.NotifyResponse;
-import com.phithang.mysocialnetwork.dto.response.ResponseDto;
+import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.entity.NotificationEntity;
 import com.phithang.mysocialnetwork.service.Impl.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,11 +21,11 @@ public class NotifyController {
     private NotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<ResponseDto<List<NotifyResponse>>> getNotifications() {
+    public ResponseEntity<ApiResponse<List<NotifyResponse>>> getNotifications() {
         List<NotificationEntity> notifications = notificationService.getNotification();
 
         if (notifications.isEmpty()) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "No notifications found"));
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "No notifications found"));
         }
 
         List<NotifyResponse> responses = notifications.stream().map(notification -> {
@@ -38,6 +37,6 @@ public class NotifyController {
             return response;
         }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(new ResponseDto<>(200, responses, "Success"));
+        return ResponseEntity.ok(new ApiResponse<>(200, responses, "Success"));
     }
 }

@@ -1,6 +1,6 @@
 package com.phithang.mysocialnetwork.service.Impl;
 
-import com.phithang.mysocialnetwork.dto.request.ReportDto;
+import com.phithang.mysocialnetwork.dto.request.ReportRequest;
 import com.phithang.mysocialnetwork.entity.ReportEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.repository.PostRepository;
@@ -26,13 +26,13 @@ public class ReportService implements IReportService {
     private UserRepository userRepository;
 
     @Override
-    public boolean  saveReport(ReportDto reportDto)
+    public boolean  saveReport(ReportRequest reportRequest)
     {
 
         ReportEntity reportEntity = new ReportEntity();
-        reportEntity.setPost(postRepository.findById(reportDto.getPostId()).orElse(null));
+        reportEntity.setPost(postRepository.findById(reportRequest.getPostId()).orElse(null));
         reportEntity.setReportDate(LocalDateTime.now());
-        reportEntity.setTitle(reportDto.getTitle());
+        reportEntity.setTitle(reportRequest.getTitle());
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity author = userRepository.findByEmail(authentication.getName());
         reportEntity.setUser(author);

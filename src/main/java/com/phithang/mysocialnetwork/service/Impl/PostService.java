@@ -4,11 +4,10 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.phithang.mysocialnetwork.dto.CommentDto;
 import com.phithang.mysocialnetwork.dto.MediaDto;
-import com.phithang.mysocialnetwork.dto.request.PostRequestDto;
-import com.phithang.mysocialnetwork.dto.request.PostUpdateDto;
+import com.phithang.mysocialnetwork.dto.request.PostRequest;
+import com.phithang.mysocialnetwork.dto.request.PostUpdateRequest;
 import com.phithang.mysocialnetwork.entity.*;
 import com.phithang.mysocialnetwork.repository.*;
-import com.phithang.mysocialnetwork.service.INotificationService;
 import com.phithang.mysocialnetwork.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,19 +51,19 @@ public class PostService implements IPostService {
 
     @Transactional
     @Override
-    public PostEntity createPost(PostRequestDto postRequestDto) throws IOException {
+    public PostEntity createPost(PostRequest postRequest) throws IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity author = userService.findUserByEmail(authentication.getName());
 
         // Tạo bài viết
         PostEntity postEntity = new PostEntity();
-        postEntity.setContent(postRequestDto.getContent());
+        postEntity.setContent(postRequest.getContent());
         postEntity.setAuthor(author);
         postEntity.setTimestamp(LocalDateTime.now());
         postRepository.save(postEntity);
 
         List<MediaEntity> mediaEntities = new ArrayList<>();
-        for (MediaDto file : postRequestDto.getMedia()) {
+        for (MediaDto file : postRequest.getMedia()) {
             var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap());
             String mediaUrl = uploadResult.get("secure_url").toString();
             String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
@@ -88,7 +87,7 @@ public class PostService implements IPostService {
 
     @Transactional
     @Override
-    public PostEntity updatePost(PostUpdateDto postRequestDto) throws IOException {
+    public PostEntity updatePost(PostUpdateRequest postRequestDto) throws IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity author = userService.findUserByEmail(authentication.getName());
 
@@ -100,7 +99,7 @@ public class PostService implements IPostService {
 
         return postEntity;
     }
-
+    @Transactional
     @Override
     public boolean deletePost(Long id) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -108,7 +107,10 @@ public class PostService implements IPostService {
         UserEntity userEntity = userService.findUserByEmail(email);
         PostEntity postEntity = postRepository.findById(id).orElse(null);
         if (postEntity != null && postEntity.getAuthor().getId().equals(userEntity.getId())) {
+            commentRepository.deleteByPostId(id);
+            notificationRepository.deleteByPostId(id);
             postRepository.delete(postEntity);
+
             return true;
         }
         return false;

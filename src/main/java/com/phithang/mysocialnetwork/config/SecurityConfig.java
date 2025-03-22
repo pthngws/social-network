@@ -1,9 +1,9 @@
 package com.phithang.mysocialnetwork.config;
+
 import com.phithang.mysocialnetwork.service.Impl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,7 +35,7 @@ public class SecurityConfig {
         SecretKeySpec secretKey = new SecretKeySpec(jwtSecret.getBytes(), "HS512");
         NimbusJwtDecoder nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS512).build();
         return nimbusJwtDecoder;
-    };
+    }
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/auth/login",
@@ -48,7 +48,8 @@ public class SecurityConfig {
             "/css/**",
             "/js/**",
             "/images/**",
-            "/ws/**"
+            "/ws/**",
+            "/login" // Thêm /login vào danh sách public endpoints
     };
     private final String[] ADMIN_ENDPOINTS = {};
     private final String[] USER_ENDPOINTS = {};
@@ -64,24 +65,23 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/auth/oauth2-login", true)
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(new CustomOAuth2UserService()) // Hỗ trợ cả Google và Facebook
+                                .userService(new CustomOAuth2UserService())
                         )
+                        .defaultSuccessUrl("/login?oauth2=success", true) // Redirect về /login với param
+                        .failureUrl("/login?error=true")
                 )
-
-                .formLogin(AbstractHttpConfigurer::disable) // Tắt trang login mặc định
+                .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();
     }
 
-
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://172.172.29.247:8080")); // Đổi thành IP frontend của bạn
+        configuration.setAllowedOrigins(List.of("http://172.172.29.247:8080", "http://localhost:8080"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
@@ -91,8 +91,6 @@ public class SecurityConfig {
 
         return source;
     }
-
-
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {

@@ -2,11 +2,11 @@ package com.phithang.mysocialnetwork.controller;
 
 import com.nimbusds.jose.JOSEException;
 import com.phithang.mysocialnetwork.dto.*;
-import com.phithang.mysocialnetwork.dto.request.IntrospectDto;
-import com.phithang.mysocialnetwork.dto.request.LoginRequestDto;
+import com.phithang.mysocialnetwork.dto.request.IntrospectRequest;
+import com.phithang.mysocialnetwork.dto.request.LoginRequest;
 import com.phithang.mysocialnetwork.dto.request.PasswordDto;
-import com.phithang.mysocialnetwork.dto.request.SignupDto;
-import com.phithang.mysocialnetwork.dto.response.ResponseDto;
+import com.phithang.mysocialnetwork.dto.request.SignupRequest;
+import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
 import com.phithang.mysocialnetwork.service.IUserService;
@@ -30,59 +30,58 @@ public class AuthenticateController {
     private IAuthenticateService authenticateService;
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseDto<UserDto>> login(@RequestBody LoginRequestDto loginRequest) throws JOSEException {
+    public ResponseEntity<ApiResponse<UserDto>> login(@RequestBody LoginRequest loginRequest) throws JOSEException {
         UserDto userDto = authenticateService.login(loginRequest);
         if (userDto != null) {
-            return ResponseEntity.ok(new ResponseDto<>(200, userDto, "Login successful"));
+            return ResponseEntity.ok(new ApiResponse<>(200, userDto, "Login successful"));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDto<>(400, null, "Invalid username or password"));
+                .body(new ApiResponse<>(400, null, "Invalid username or password"));
     }
 
     @PostMapping("/introspect")
-    public ResponseEntity<ResponseDto<String>> introspect(@RequestBody IntrospectDto token) throws JOSEException, ParseException {
+    public ResponseEntity<ApiResponse<String>> introspect(@RequestBody IntrospectRequest token) throws JOSEException, ParseException {
         String email = authenticateService.introspectToken(token);
         if (email != null) {
-            return ResponseEntity.ok(new ResponseDto<>(200, email, "Introspect successful"));
+            return ResponseEntity.ok(new ApiResponse<>(200, email, "Introspect successful"));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDto<>(400, null, "Invalid token"));
+                .body(new ApiResponse<>(400, null, "Invalid token"));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ResponseDto<Void>> signup(@RequestBody SignupDto signupDto) {
+    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody SignupRequest signupDto) {
         UserEntity userEntity = userService.findUserByEmail(signupDto.getEmail());
         if (userEntity != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ResponseDto<>(400, null, "Email already in use"));
+                    .body(new ApiResponse<>(400, null, "Email already in use"));
         }
         if (authenticateService.saveUser(signupDto)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "Signup successful"));
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Signup successful"));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDto<>(400, null, "Invalid email or password"));
+                .body(new ApiResponse<>(400, null, "Invalid email or password"));
     }
 
     @PostMapping("/updatepassword")
-    public ResponseEntity<ResponseDto<Void>> changepassword(@RequestBody PasswordDto passwordDto) {
+    public ResponseEntity<ApiResponse<Void>> changepassword(@RequestBody PasswordDto passwordDto) {
         if (userService.updatePassword(passwordDto)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "Update password successful!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Update password successful!"));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDto<>(400, null, "Update password failed!"));
+                .body(new ApiResponse<>(400, null, "Update password failed!"));
     }
 
     @GetMapping("/oauth2-login")
-    public ResponseEntity<ResponseDto<UserDto>> oauth2Login(
+    public ResponseEntity<ApiResponse<UserDto>> oauth2Login(
             @AuthenticationPrincipal OidcUser oidcUser,
             @AuthenticationPrincipal OAuth2User oAuth2User) throws JOSEException {
-
         UserDto userResponse = authenticateService.oauth2Login(oidcUser, oAuth2User);
         if (userResponse == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    new ResponseDto<>(HttpStatus.UNAUTHORIZED.value(), null, "Không thể xác thực bằng Google hoặc Facebook")
+                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), null, "Không thể xác thực bằng Google hoặc Facebook")
             );
         }
-        return ResponseEntity.ok(new ResponseDto<>(HttpStatus.OK.value(),userResponse, "Đăng nhập thành công" ));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), userResponse, "Đăng nhập thành công"));
     }
 }

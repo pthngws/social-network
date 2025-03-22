@@ -1,18 +1,17 @@
 package com.phithang.mysocialnetwork.controller;
 
 import com.phithang.mysocialnetwork.dto.*;
-import com.phithang.mysocialnetwork.dto.request.PostRequestDto;
-import com.phithang.mysocialnetwork.dto.request.PostUpdateDto;
-import com.phithang.mysocialnetwork.dto.request.ReportDto;
-import com.phithang.mysocialnetwork.dto.response.CommentResponseDto;
-import com.phithang.mysocialnetwork.dto.response.ResponseDto;
+import com.phithang.mysocialnetwork.dto.request.PostRequest;
+import com.phithang.mysocialnetwork.dto.request.PostUpdateRequest;
+import com.phithang.mysocialnetwork.dto.request.ReportRequest;
+import com.phithang.mysocialnetwork.dto.response.CommentResponse;
+import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.entity.CommentEntity;
 import com.phithang.mysocialnetwork.entity.PostEntity;
 import com.phithang.mysocialnetwork.service.ICommentService;
 import com.phithang.mysocialnetwork.service.IPostService;
 import com.phithang.mysocialnetwork.service.IReportService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +53,7 @@ public class PostController {
     }
 
     @GetMapping("/userpost/{id}")
-    public ResponseEntity<ResponseDto<List<PostDto>>> getUserPosts(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<PostDto>>> getUserPosts(@PathVariable Long id) {
         List<PostEntity> posts = postService.getUserPosts(id);
         String currentUserEmail = getCurrentUserEmail();
 
@@ -63,11 +62,11 @@ public class PostController {
                 .collect(Collectors.toList());
         Collections.reverse(list);
 
-        return ResponseEntity.ok(new ResponseDto<>(200, list, "Get posts successful!"));
+        return ResponseEntity.ok(new ApiResponse<>(200, list, "Get posts successful!"));
     }
 
     @GetMapping("/myposts")
-    public ResponseEntity<ResponseDto<List<PostDto>>> getMyPosts() {
+    public ResponseEntity<ApiResponse<List<PostDto>>> getMyPosts() {
         List<PostEntity> posts = postService.getMyPost();
         String currentUserEmail = getCurrentUserEmail();
 
@@ -76,11 +75,11 @@ public class PostController {
                 .collect(Collectors.toList());
         Collections.reverse(list);
 
-        return ResponseEntity.ok(new ResponseDto<>(200, list, "Get my posts successful!"));
+        return ResponseEntity.ok(new ApiResponse<>(200, list, "Get my posts successful!"));
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<ResponseDto<List<PostDto>>> getPosts() {
+    public ResponseEntity<ApiResponse<List<PostDto>>> getPosts() {
         List<PostEntity> posts = postService.getAllPost();
         String currentUserEmail = getCurrentUserEmail();
 
@@ -89,59 +88,59 @@ public class PostController {
                 .collect(Collectors.toList());
         Collections.reverse(list);
 
-        return ResponseEntity.ok(new ResponseDto<>(200, list, "Get all posts successful!"));
+        return ResponseEntity.ok(new ApiResponse<>(200, list, "Get all posts successful!"));
     }
 
     @PostMapping("/post")
-    public ResponseEntity<ResponseDto<PostEntity>> post(@RequestBody PostRequestDto post) throws IOException {
+    public ResponseEntity<ApiResponse<PostEntity>> post(@RequestBody PostRequest post) throws IOException {
         PostEntity postEntity = postService.createPost(post);
         if (postEntity != null) {
-            return ResponseEntity.ok(new ResponseDto<>(200, postEntity, "Post created successfully!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post created successfully!"));
         }
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Post creation failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post creation failed!"));
     }
 
     @PutMapping("/post/{id}")
-    public ResponseEntity<ResponseDto<PostEntity>> update(@RequestBody PostUpdateDto post) throws IOException {
+    public ResponseEntity<ApiResponse<PostEntity>> update(@RequestBody PostUpdateRequest post) throws IOException {
         PostEntity postEntity = postService.updatePost(post);
         if (postEntity != null) {
-            return ResponseEntity.ok(new ResponseDto<>(200, postEntity, "Post updated successfully!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post updated successfully!"));
         }
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Post update failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post update failed!"));
     }
 
     @DeleteMapping("/post/{id}")
-    public ResponseEntity<ResponseDto<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         if (postService.deletePost(id)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "Post deleted successfully!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Post deleted successfully!"));
         }
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Post deletion failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post deletion failed!"));
     }
 
     @PostMapping("/like/{id}")
-    public ResponseEntity<ResponseDto<Void>> like(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> like(@PathVariable Long id) {
         if (postService.likePost(id)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "Like successful!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Like successful!"));
         }
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Like failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Like failed!"));
     }
 
     @PostMapping("/comment/{postId}")
-    public ResponseEntity<ResponseDto<CommentDto>> comment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
+    public ResponseEntity<ApiResponse<CommentDto>> comment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
         if (postService.commentPost(postId, commentDto)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, commentDto, "Comment successful!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, commentDto, "Comment successful!"));
         }
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Comment failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Comment failed!"));
     }
 
     @GetMapping("/comment/{id}")
-    public ResponseEntity<ResponseDto<List<CommentResponseDto>>> getComments(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> getComments(@PathVariable Long id) {
         PostEntity postEntity = postService.findById(id);
 
         if (postEntity != null) {
             List<CommentEntity> comments = postEntity.getComments();
-            List<CommentResponseDto> list = comments.stream().map(commentEntity -> {
-                CommentResponseDto dto = new CommentResponseDto();
+            List<CommentResponse> list = comments.stream().map(commentEntity -> {
+                CommentResponse dto = new CommentResponse();
                 dto.setId(commentEntity.getId());
                 dto.setAuthorId(commentEntity.getAuthor().getId());
                 dto.setContent(commentEntity.getContent());
@@ -158,28 +157,28 @@ public class PostController {
                 return dto;
             }).collect(Collectors.toList());
 
-            return ResponseEntity.ok(new ResponseDto<>(200, list, "Get comments successful!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, list, "Get comments successful!"));
         }
 
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Post not found!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post not found!"));
     }
 
     @DeleteMapping("/comment/{id}")
-    public ResponseEntity<ResponseDto<Void>> deleteComment(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteComment(@PathVariable Long id) {
         CommentEntity commentEntity = commentService.findById(id);
 
         if (commentEntity != null && commentService.delete(commentEntity)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "Comment deleted successfully!"));
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Comment deleted successfully!"));
         }
 
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Comment deletion failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Comment deletion failed!"));
     }
 
     @PostMapping("/report")
-    public ResponseEntity<ResponseDto<Void>> report(@RequestBody ReportDto reportDto) {
-        if (reportService.saveReport(reportDto)) {
-            return ResponseEntity.ok(new ResponseDto<>(200, null, "Report successful!"));
+    public ResponseEntity<ApiResponse<Void>> report(@RequestBody ReportRequest reportRequest) {
+        if (reportService.saveReport(reportRequest)) {
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Report successful!"));
         }
-        return ResponseEntity.badRequest().body(new ResponseDto<>(400, null, "Report failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Report failed!"));
     }
 }

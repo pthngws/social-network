@@ -21,6 +21,9 @@ public class FriendshipService implements IFriendshipService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public FriendshipEntity save(UserEntity sender, UserEntity receiver)
     {
@@ -29,6 +32,10 @@ public class FriendshipService implements IFriendshipService {
         friendshipEntity.setUser2(receiver);
         friendshipEntity.setStatus("PENDING");
         friendshipEntity.setRequestTimestamp(LocalDateTime.now());
+        notificationService.createAndSendNotification(
+                receiver,
+                sender.getFirstname() + " " + sender.getLastname() + " đã gửi lời mời kết bạn.",null
+        );
         return friendshipRepository.save(friendshipEntity);
     }
 
@@ -38,6 +45,10 @@ public class FriendshipService implements IFriendshipService {
         FriendshipEntity friendshipEntity = friendshipRepository.findByUser1AndUser2(sender, receiver);
         friendshipEntity.setStatus("ACCEPTED");
         friendshipEntity.setRequestTimestamp(LocalDateTime.now());
+        notificationService.createAndSendNotification(
+                sender,
+                receiver.getFirstname() + " " + receiver.getLastname() + " đã chấp nhận lời mời kết bạn.",null
+        );
         return friendshipRepository.save(friendshipEntity) != null;
     }
 

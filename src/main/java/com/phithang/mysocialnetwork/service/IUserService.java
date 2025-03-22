@@ -1,7 +1,7 @@
 package com.phithang.mysocialnetwork.service;
 
 import com.phithang.mysocialnetwork.dto.request.PasswordDto;
-import com.phithang.mysocialnetwork.dto.request.UpdateProfileDto;
+import com.phithang.mysocialnetwork.dto.request.UpdateProfileRequest;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +16,7 @@ public interface IUserService {
     boolean updatePassword(PasswordDto passwordDto);
 
 
-    boolean updateProfile(UpdateProfileDto updateProfileDto, MultipartFile avatarFile);
+    boolean updateProfile(UpdateProfileRequest updateProfileRequest, MultipartFile avatarFile);
 
     UserEntity findById(Long id);
 
