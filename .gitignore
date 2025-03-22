@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Bỏ qua file cấu hình Spring Boot
+application.properties

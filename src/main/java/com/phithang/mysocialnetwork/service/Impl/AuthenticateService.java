@@ -16,7 +16,6 @@ import com.phithang.mysocialnetwork.service.IUserService;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -38,13 +37,17 @@ public class AuthenticateService implements IAuthenticateService {
     @Autowired
     private IUserService userService;
 
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OtpService otpService;
+
     @Override
     public String introspectToken(IntrospectRequest token) throws JOSEException, ParseException {
-
         JWSVerifier verifier = new MACVerifier(SECRET.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token.getToken());
         Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -54,14 +57,12 @@ public class AuthenticateService implements IAuthenticateService {
             return null;
         }
     }
+
     @Override
     public UserDto oauth2Login(OidcUser oidcUser, OAuth2User oAuth2User) throws JOSEException {
-
-
         String email;
         String name;
         if (oidcUser != null) {
-            // Xác thực Google
             email = oidcUser.getEmail();
             name = oidcUser.getFullName();
         } else {
@@ -82,6 +83,7 @@ public class AuthenticateService implements IAuthenticateService {
         userDto.setToken(accessToken);
         return userDto;
     }
+
     @Override
     public String generateToken(UserEntity userEntity) throws JOSEException {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
@@ -101,25 +103,74 @@ public class AuthenticateService implements IAuthenticateService {
     @Override
     public UserDto login(LoginRequest loginRequest) throws JOSEException {
         UserEntity userEntity = userService.findUserByEmail(loginRequest.getEmail());
-        if (userEntity != null) {
+        if (userEntity != null && userEntity.isActive()) {
             if (passwordEncoder.matches(loginRequest.getPassword(), userEntity.getPassword())) {
                 String token = this.generateToken(userEntity);
                 UserDto userDto = new UserDto(userEntity);
                 userDto.setToken(token);
                 return userDto;
             }
-
         }
         return null;
     }
 
     @Override
     public boolean saveUser(SignupRequest signupDto) {
-        UserEntity userEntity = new UserEntity();
-        userEntity = signupDto.toUserEntity();
+        UserEntity userEntity = signupDto.toUserEntity();
         userEntity.setRole("CLIENT");
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        userEntity.setActive(false);
         userService.saveUser(userEntity);
         return true;
+    }
+
+    @Override
+    public void sendOtpForSignup(String email) {
+        String otp = otpService.generateOtp();
+        otpService.saveOtp(email, otp);
+        otpService.sendOtpEmail(email, otp);
+    }
+
+    @Override
+    public boolean verifyOtpAndActivate(String email, String otp) {
+        if (otpService.verifyOtp(email, otp)) {
+            UserEntity user = userService.findUserByEmail(email);
+            if (user != null && !user.isActive()) {
+                user.setActive(true);
+                userService.saveUser(user);
+                otpService.deleteOtp(email);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void sendOtpForPasswordReset(String email) {
+        UserEntity user = userService.findUserByEmail(email);
+        if (user != null) {
+            String otp = otpService.generateOtp();
+            otpService.saveOtp(email, otp);
+            otpService.sendOtpForPasswordReset(email, otp);
+        }
+    }
+
+    @Override
+    public boolean verifyOtpForPasswordReset(String email, String otp) {
+        return otpService.verifyOtp(email, otp);
+    }
+
+    @Override
+    public boolean resetPassword(String email, String otp, String newPassword) {
+        if (otpService.verifyOtp(email, otp)) {
+            UserEntity user = userService.findUserByEmail(email);
+            if (user != null) {
+                user.setPassword(passwordEncoder.encode(newPassword));
+                userService.saveUser(user);
+                otpService.deleteOtp(email);
+                return true;
+            }
+        }
+        return false;
     }
 }

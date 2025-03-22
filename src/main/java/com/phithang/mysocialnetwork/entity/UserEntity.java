@@ -30,7 +30,7 @@ public class UserEntity {
     private String about;
     private Date birthday;
     private String gender;
-
+    private boolean isActive;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

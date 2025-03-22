@@ -57,10 +57,20 @@ public class AuthenticateController {
                     .body(new ApiResponse<>(400, null, "Email already in use"));
         }
         if (authenticateService.saveUser(signupDto)) {
-            return ResponseEntity.ok(new ApiResponse<>(200, null, "Signup successful"));
+            authenticateService.sendOtpForSignup(signupDto.getEmail());
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "Signup successful. Please check your email for OTP."));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse<>(400, null, "Invalid email or password"));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        if (authenticateService.verifyOtpAndActivate(email, otp)) {
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "OTP verified. Account activated."));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(400, null, "Invalid OTP or email"));
     }
 
     @PostMapping("/updatepassword")
@@ -83,5 +93,50 @@ public class AuthenticateController {
             );
         }
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), userResponse, "Đăng nhập thành công"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestParam String email) {
+        UserEntity userEntity = userService.findUserByEmail(email);
+        if (userEntity == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, null, "Email not found"));
+        }
+        try {
+            authenticateService.sendOtpForPasswordReset(email);
+            return ResponseEntity.ok(new ApiResponse<>(200, null,
+                    "OTP has been sent to your email for password reset"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, null, "Failed to send OTP"));
+        }
+    }
+
+    @PostMapping("/verify-reset-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyResetOtp(
+            @RequestParam String email,
+            @RequestParam String otp) {
+        boolean isValid = authenticateService.verifyOtpForPasswordReset(email, otp);
+        if (isValid) {
+            return ResponseEntity.ok(new ApiResponse<>(200, null,
+                    "OTP verified successfully. You can now reset your password"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(400, null, "Invalid OTP or email"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @RequestParam String email,
+            @RequestParam String otp,
+            @RequestParam String newPassword) {
+        boolean isReset = authenticateService.resetPassword(email, otp, newPassword);
+        if (isReset) {
+            return ResponseEntity.ok(new ApiResponse<>(200, null,
+                    "Password has been reset successfully"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(400, null,
+                        "Failed to reset password. Invalid OTP or email"));
     }
 }

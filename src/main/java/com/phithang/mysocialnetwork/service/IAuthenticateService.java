@@ -23,4 +23,15 @@ public interface IAuthenticateService {
     UserDto login(LoginRequest loginRequest) throws JOSEException;
 
     boolean saveUser(SignupRequest signupDto);
+
+    void sendOtpForSignup(String email);
+
+    boolean verifyOtpAndActivate(String email, String otp);
+
+    // Chuyển logic OTP sang OtpService
+    void sendOtpForPasswordReset(String email);
+
+    boolean verifyOtpForPasswordReset(String email, String otp);
+
+    boolean resetPassword(String email, String otp, String newPassword);
 }
