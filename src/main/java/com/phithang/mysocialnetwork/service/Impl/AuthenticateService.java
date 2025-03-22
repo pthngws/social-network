@@ -53,7 +53,7 @@ public class AuthenticateService implements IAuthenticateService {
     private OtpService otpService;
 
     @Autowired
-    private RefreshTokenService refreshTokenService; // Giả định bạn đã có RefreshTokenService
+    private RefreshTokenService refreshTokenService;
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -63,9 +63,9 @@ public class AuthenticateService implements IAuthenticateService {
         SignedJWT signedJWT = SignedJWT.parse(token.getToken());
         Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
         if (signedJWT.verify(verifier) && expirationDate.after(new Date())) {
-            return signedJWT.getJWTClaimsSet().getSubject(); // Trả về email
+            return signedJWT.getJWTClaimsSet().getSubject();
         }
-        return null;
+        throw new AppException(ErrorCode.INVALID_TOKEN);
     }
 
     @Override
@@ -75,16 +75,22 @@ public class AuthenticateService implements IAuthenticateService {
         if (oidcUser != null) {
             email = oidcUser.getEmail();
             name = oidcUser.getFullName();
+        } else if (oAuth2User != null) {
+            email = oAuth2User.getAttribute("email");
+            name = oAuth2User.getAttribute("name");
         } else {
-            name = "";
-            email = "";
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Không thể lấy thông tin người dùng từ OAuth2");
+        }
+
+        if (email == null || email.isEmpty()) {
+            throw new AppException(ErrorCode.EMAIL_INVALID);
         }
 
         Optional<UserEntity> existingUser = Optional.ofNullable(userRepository.findByEmail(email));
         UserEntity user = existingUser.orElseGet(() -> {
             UserEntity newUser = new UserEntity();
             newUser.setEmail(email);
-            newUser.setFirstname(name);
+            newUser.setFirstname(name != null ? name : "Unknown");
             newUser.setRole("USER");
             return userRepository.save(newUser);
         });
@@ -132,6 +138,9 @@ public class AuthenticateService implements IAuthenticateService {
         }
 
         UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST);
+        }
 
         return generateToken(user);
     }
@@ -142,34 +151,41 @@ public class AuthenticateService implements IAuthenticateService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        String email = authentication.getName(); // Lấy email từ SecurityContext
+        String email = authentication.getName();
         refreshTokenService.deleteRefreshToken(email);
     }
 
     private String getEmailFromRefreshToken(String refreshToken) {
-        // Kiểm tra refresh token trong service, trả về email nếu hợp lệ
         return refreshTokenService.getEmailByRefreshToken(refreshToken);
     }
 
     @Override
     public UserDto login(LoginRequest loginRequest) throws JOSEException {
         UserEntity userEntity = userService.findUserByEmail(loginRequest.getEmail());
-        if (userEntity != null && userEntity.isActive()) {
-            if (passwordEncoder.matches(loginRequest.getPassword(), userEntity.getPassword())) {
-                String token = generateToken(userEntity);
-                String refreshToken = generateRefreshToken(userEntity);
-                UserDto userDto = new UserDto(userEntity);
-                userDto.setToken(token);
-                userDto.setRefreshToken(refreshToken);
-                return userDto;
-            }
+        if (userEntity == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND_BY_EMAIL);
         }
-        return null;
+        if (!userEntity.isActive()) {
+            throw new AppException(ErrorCode.USER_NOT_ACTIVE, "Tài khoản chưa được kích hoạt");
+        }
+        if (!passwordEncoder.matches(loginRequest.getPassword(), userEntity.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_INCORRECT, "Mật khẩu không đúng");
+        }
+
+        String token = generateToken(userEntity);
+        String refreshToken = generateRefreshToken(userEntity);
+        UserDto userDto = new UserDto(userEntity);
+        userDto.setToken(token);
+        userDto.setRefreshToken(refreshToken);
+        return userDto;
     }
 
     @Override
     public boolean saveUser(SignupRequest signupDto) {
         UserEntity userEntity = signupDto.toUserEntity();
+        if (userRepository.findByEmail(userEntity.getEmail()) != null) {
+            throw new AppException(ErrorCode.EMAIL_EXIST_REGISTER);
+        }
         userEntity.setRole("CLIENT");
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity.setActive(false);
@@ -179,53 +195,75 @@ public class AuthenticateService implements IAuthenticateService {
 
     @Override
     public void sendOtpForSignup(String email) {
+        if (!isValidEmail(email)) {
+            throw new AppException(ErrorCode.EMAIL_INVALID);
+        }
         String otp = otpService.generateOtp();
         otpService.saveOtp(email, otp);
-        otpService.sendOtpEmail(email, otp);
+        try {
+            otpService.sendOtpEmail(email, otp);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+        }
     }
 
     @Override
     public boolean verifyOtpAndActivate(String email, String otp) {
-        if (otpService.verifyOtp(email, otp)) {
-            UserEntity user = userService.findUserByEmail(email);
-            if (user != null && !user.isActive()) {
-                user.setActive(true);
-                userService.saveUser(user);
-                otpService.deleteOtp(email);
-                return true;
-            }
+        if (!otpService.verifyOtp(email, otp)) {
+            throw new AppException(ErrorCode.INVALID_OTP);
         }
-        return false;
+        UserEntity user = userService.findUserByEmail(email);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND_BY_EMAIL);
+        }
+        if (user.isActive()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Tài khoản đã được kích hoạt");
+        }
+        user.setActive(true);
+        userService.saveUser(user);
+        otpService.deleteOtp(email);
+        return true;
     }
 
     @Override
     public void sendOtpForPasswordReset(String email) {
         UserEntity user = userService.findUserByEmail(email);
         if (user == null) {
-            throw new AppException(ErrorCode.USER_NOT_EXIST);
+            throw new AppException(ErrorCode.USER_NOT_FOUND_BY_EMAIL);
         }
         String otp = otpService.generateOtp();
         otpService.saveOtp(email, otp);
-        otpService.sendOtpForPasswordReset(email, otp);
+        try {
+            otpService.sendOtpForPasswordReset(email, otp);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+        }
     }
 
     @Override
     public boolean verifyOtpForPasswordReset(String email, String otp) {
-        return otpService.verifyOtp(email, otp);
+        if (!otpService.verifyOtp(email, otp)) {
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+        return true;
     }
 
     @Override
     public boolean resetPassword(String email, String otp, String newPassword) {
         if (!otpService.verifyOtp(email, otp)) {
-            return false;
+            throw new AppException(ErrorCode.INVALID_OTP);
         }
         UserEntity user = userService.findUserByEmail(email);
         if (user == null) {
-            return false;
+            throw new AppException(ErrorCode.USER_NOT_FOUND_BY_EMAIL);
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userService.saveUser(user);
         otpService.deleteOtp(email);
         return true;
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 }

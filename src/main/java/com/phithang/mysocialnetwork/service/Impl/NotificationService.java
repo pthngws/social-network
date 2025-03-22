@@ -4,6 +4,8 @@ import com.phithang.mysocialnetwork.dto.response.NotifyResponse;
 import com.phithang.mysocialnetwork.entity.NotificationEntity;
 import com.phithang.mysocialnetwork.entity.PostEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
+import com.phithang.mysocialnetwork.exception.AppException;
+import com.phithang.mysocialnetwork.exception.ErrorCode;
 import com.phithang.mysocialnetwork.repository.NotificationRepository;
 import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.INotificationService;
@@ -29,22 +31,33 @@ public class NotificationService implements INotificationService {
     @Override
     public List<NotificationEntity> getNotification() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST);
+        }
         return notificationRepository.findAllByUser(user);
     }
 
     public void sendRealTimeNotification(NotificationEntity notification) {
+        if (notification == null) {
+            throw new AppException(ErrorCode.NOTIFICATION_NOT_FOUND);
+        }
         NotifyResponse response = new NotifyResponse();
         response.setContent(notification.getContent());
         response.setDate(notification.getTimestamp());
         response.setIsRead(notification.getIsread());
 
-        // Sử dụng email thay vì ID
         String destination = "/topic/notifications/" + notification.getUser().getEmail();
         messagingTemplate.convertAndSend(destination, response);
     }
 
     public void createAndSendNotification(UserEntity user, String content, PostEntity post) {
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST);
+        }
         NotificationEntity notification = new NotificationEntity();
         notification.setUser(user);
         notification.setContent(content);
@@ -52,7 +65,11 @@ public class NotificationService implements INotificationService {
         notification.setTimestamp(java.time.LocalDateTime.now());
         notification.setPost(post);
 
-        notificationRepository.save(notification);
-        sendRealTimeNotification(notification);
+        try {
+            notificationRepository.save(notification);
+            sendRealTimeNotification(notification);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.NOTIFICATION_CREATION_FAILED);
+        }
     }
 }

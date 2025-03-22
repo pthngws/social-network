@@ -5,6 +5,8 @@ import com.cloudinary.utils.ObjectUtils;
 import com.phithang.mysocialnetwork.dto.request.PasswordDto;
 import com.phithang.mysocialnetwork.dto.request.UpdateProfileRequest;
 import com.phithang.mysocialnetwork.entity.UserEntity;
+import com.phithang.mysocialnetwork.exception.AppException;
+import com.phithang.mysocialnetwork.exception.ErrorCode;
 import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +22,11 @@ import java.util.Map;
 
 @Service
 public class UserService implements IUserService {
+
     @Autowired
     private UserRepository userRepository;
 
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private Cloudinary cloudinary;
@@ -35,78 +38,92 @@ public class UserService implements IUserService {
 
     @Override
     public UserEntity findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND_BY_EMAIL);
+        }
+        return user;
     }
 
     @Override
     public UserEntity saveUser(UserEntity user) {
-        return userRepository.save(user);
+        try {
+            return userRepository.save(user);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST, "Lưu người dùng thất bại");
+        }
     }
 
     @Override
-    public boolean updatePassword(PasswordDto passwordDto)
-    {
+    public boolean updatePassword(PasswordDto passwordDto) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         String email = authentication.getName();
         UserEntity userEntity = userRepository.findByEmail(email);
-        if(userEntity!=null)
-        {
-            if(passwordEncoder.matches(passwordDto.getOldPassword(),userEntity.getPassword()))
-            {
-                userEntity.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
-                userRepository.save(userEntity);
-                return true;
-            }
+        if (userEntity == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        return false;
+        if (!passwordEncoder.matches(passwordDto.getOldPassword(), userEntity.getPassword())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Mật khẩu cũ không đúng");
+        }
+        userEntity.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        try {
+            userRepository.save(userEntity);
+            return true;
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST, "Cập nhật mật khẩu thất bại");
+        }
     }
 
     @Override
     public boolean updateProfile(UpdateProfileRequest updateProfileRequest, MultipartFile avatarFile) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         String email = authentication.getName();
         UserEntity userEntity = userRepository.findByEmail(email);
-        if (userEntity != null) {
-            try {
-                // Upload ảnh lên Cloudinary nếu có file
-                if (avatarFile != null && !avatarFile.isEmpty()) {
-                    Map uploadResult = cloudinary.uploader().upload(avatarFile.getBytes(),
-                            ObjectUtils.asMap("resource_type", "image"));
-                    String imageUrl = uploadResult.get("url").toString();
-                    userEntity.setImageUrl(imageUrl); // Lưu URL ảnh vào database
-                } else if (updateProfileRequest.getAvatar() != null) {
-                    userEntity.setImageUrl(updateProfileRequest.getAvatar()); // Sử dụng URL từ DTO nếu có
-                }
-
-                // Cập nhật các thông tin khác
-                userEntity.setLastname(updateProfileRequest.getLastName());
-                userEntity.setFirstname(updateProfileRequest.getFirstName());
-                userEntity.setAbout(updateProfileRequest.getAbout());
-                userEntity.setBirthday(java.sql.Date.valueOf(updateProfileRequest.getBirthday()));
-                userEntity.setGender(updateProfileRequest.getGender());
-
-                userRepository.save(userEntity);
-
-                return true;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
+        if (userEntity == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        return false;
+        try {
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                if (avatarFile.getSize() > 10 * 1024 * 1024) { // Giới hạn 10MB
+                    throw new AppException(ErrorCode.MEDIA_SIZE_EXCEEDED);
+                }
+                Map uploadResult = cloudinary.uploader().upload(avatarFile.getBytes(),
+                        ObjectUtils.asMap("resource_type", "image"));
+                String imageUrl = uploadResult.get("url").toString();
+                userEntity.setImageUrl(imageUrl);
+            } else if (updateProfileRequest.getAvatar() != null) {
+                userEntity.setImageUrl(updateProfileRequest.getAvatar());
+            }
+
+            userEntity.setLastname(updateProfileRequest.getLastName());
+            userEntity.setFirstname(updateProfileRequest.getFirstName());
+            userEntity.setAbout(updateProfileRequest.getAbout());
+            userEntity.setBirthday(java.sql.Date.valueOf(updateProfileRequest.getBirthday()));
+            userEntity.setGender(updateProfileRequest.getGender());
+
+            userRepository.save(userEntity);
+            return true;
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.MEDIA_UPLOAD_FAILED);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.PROFILE_NOT_FOUND, "Cập nhật profile thất bại");
+        }
     }
 
-
     @Override
-    public UserEntity findById(Long id)
-    {
-        return userRepository.findById(id).orElse(null);
+    public UserEntity findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXIST));
     }
 
-
     @Override
-    public List<UserEntity> findByFirstnameOrLastnameContaining(String name)
-    {
+    public List<UserEntity> findByFirstnameOrLastnameContaining(String name) {
         return userRepository.findByFirstnameOrLastnameContaining(name);
     }
 }
