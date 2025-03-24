@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class MediaDto {
-    private String url;
+    private byte[] url; // Dùng byte[] để lưu dữ liệu file thô
     private String type;
 }

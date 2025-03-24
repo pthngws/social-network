@@ -1,5 +1,6 @@
 package com.phithang.mysocialnetwork.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phithang.mysocialnetwork.dto.*;
 import com.phithang.mysocialnetwork.dto.request.PostRequest;
 import com.phithang.mysocialnetwork.dto.request.PostUpdateRequest;
@@ -8,19 +9,19 @@ import com.phithang.mysocialnetwork.dto.response.CommentResponse;
 import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.entity.CommentEntity;
 import com.phithang.mysocialnetwork.entity.PostEntity;
+import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.service.ICommentService;
 import com.phithang.mysocialnetwork.service.IPostService;
 import com.phithang.mysocialnetwork.service.IReportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -91,22 +92,83 @@ public class PostController {
         return ResponseEntity.ok(new ApiResponse<>(200, list, "Get all posts successful!"));
     }
 
-    @PostMapping("/post")
-    public ResponseEntity<ApiResponse<PostEntity>> post(@RequestBody PostRequest post) throws IOException {
-        PostEntity postEntity = postService.createPost(post);
-        if (postEntity != null) {
-            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post created successfully!"));
+    @PostMapping(value = "/post", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<PostEntity>> post(
+            @RequestPart("content") String content,
+            @RequestPart(value = "media", required = false) List<MultipartFile> mediaFiles) throws IOException {
+        PostRequest postRequest = new PostRequest();
+        postRequest.setContent(content);
+
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            List<MediaDto> mediaDtos = new ArrayList<>();
+            for (MultipartFile file : mediaFiles) {
+                if (file.isEmpty()) {
+                    return ResponseEntity.badRequest()
+                            .body(new ApiResponse<>(400, null, "File media rỗng"));
+                }
+                MediaDto mediaDto = new MediaDto();
+                mediaDto.setUrl(file.getBytes()); // Chuyển file thành byte[]
+                mediaDto.setType(file.getContentType());
+                mediaDtos.add(mediaDto);
+            }
+            postRequest.setMedia(mediaDtos);
         }
-        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post creation failed!"));
+
+        try {
+            PostEntity postEntity = postService.createPost(postRequest);
+            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post created successfully!"));
+        } catch (AppException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, null, "Lỗi hệ thống: " + e.getMessage()));
+        }
     }
 
-    @PutMapping("/post/{id}")
-    public ResponseEntity<ApiResponse<PostEntity>> update(@RequestBody PostUpdateRequest post) throws IOException {
-        PostEntity postEntity = postService.updatePost(post);
-        if (postEntity != null) {
-            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post updated successfully!"));
+    @PutMapping(value = "/post/{id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<PostEntity>> update(
+            @PathVariable Long id,
+            @RequestPart("content") String content,
+            @RequestPart(value = "media", required = false) List<MultipartFile> mediaFiles,
+            @RequestPart(value = "mediaToDelete", required = false) String mediaToDeleteJson) throws IOException {
+        PostUpdateRequest postUpdateRequest = new PostUpdateRequest();
+        postUpdateRequest.setId(id);
+        postUpdateRequest.setContent(content);
+
+        // Xử lý danh sách media cần xóa
+        List<String> mediaToDelete = new ArrayList<>();
+        if (mediaToDeleteJson != null && !mediaToDeleteJson.isEmpty()) {
+            mediaToDelete = Arrays.asList(new ObjectMapper().readValue(mediaToDeleteJson, String[].class));
         }
-        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post update failed!"));
+        postUpdateRequest.setMediaToDelete(mediaToDelete);
+
+        // Xử lý media mới
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            List<MediaDto> mediaDtos = new ArrayList<>();
+            for (MultipartFile file : mediaFiles) {
+                if (file.isEmpty()) {
+                    return ResponseEntity.badRequest()
+                            .body(new ApiResponse<>(400, null, "File media rỗng"));
+                }
+                MediaDto mediaDto = new MediaDto();
+                mediaDto.setUrl(file.getBytes());
+                mediaDto.setType(file.getContentType());
+                mediaDtos.add(mediaDto);
+            }
+            postUpdateRequest.setMedia(mediaDtos);
+        }
+
+        try {
+            PostEntity postEntity = postService.updatePost(postUpdateRequest);
+            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post updated successfully!"));
+        } catch (AppException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, null, "Lỗi hệ thống: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/post/{id}")

@@ -11,13 +11,12 @@ public class PostMediaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)  // Thêm CascadeType.ALL ở đây
+    @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private PostEntity post;
 
-    @ManyToOne(cascade = CascadeType.ALL)  // Thêm CascadeType.ALL ở đây
+    @ManyToOne
     @JoinColumn(name = "media_id", nullable = false)
     private MediaEntity media;
-
     // Getters và Setters
 }

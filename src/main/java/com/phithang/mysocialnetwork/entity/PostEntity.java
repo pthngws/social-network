@@ -27,7 +27,7 @@ public class PostEntity {
     @JsonIgnore
     private List<CommentEntity> comments;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = false)
     @JsonIgnore
     private List<PostMediaEntity> postMedia;
 

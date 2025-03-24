@@ -94,8 +94,9 @@ public enum ErrorCode {
     MEDIA_UPLOAD_FAILED(2401, "Tải media lên thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     MEDIA_DELETE_FAILED(2402, "Xóa media thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     MEDIA_FORMAT_INVALID(2403, "Định dạng media không hợp lệ", HttpStatus.BAD_REQUEST),
-    MEDIA_SIZE_EXCEEDED(2404, "Kích thước media vượt quá giới hạn cho phép", HttpStatus.BAD_REQUEST);
-
+    MEDIA_SIZE_EXCEEDED(2404, "Kích thước media vượt quá giới hạn cho phép", HttpStatus.BAD_REQUEST),
+    MEDIA_DATA_INVALID(2410, "Dữ liệu media không hợp lệ",HttpStatus.BAD_REQUEST),
+    CLOUDINARY_AUTH_FAILED(2413, "Xác thực Cloudinary thất bại",HttpStatus.BAD_REQUEST);
     private final int responseCode;
     private final String message;
     private final HttpStatusCode httpStatusCode;

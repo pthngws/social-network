@@ -9,5 +9,4 @@ import java.util.List;
 public class PostRequest {
     private String content;
     private List<MediaDto> media;
-
 }

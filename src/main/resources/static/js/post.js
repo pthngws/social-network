@@ -24,14 +24,25 @@ function createPostElement(post) {
     // Xử lý media (ảnh hoặc video)
     let mediaContent = '';
     if (post.media && post.media.length > 0) {
-        const mediaUrl = post.media[0].media.url;
-        const mediaType = mediaUrl.split('.').pop();
+        const mediaCount = post.media.length;
+        const mediaItems = post.media.map(mediaItem => {
+            const mediaUrl = mediaItem.media.url;
+            const mediaType = mediaUrl.split('.').pop().toLowerCase();
 
-        if (['jpg', 'jpeg', 'png'].includes(mediaType)) {
-            mediaContent = `<img src="${mediaUrl}" alt="Post media" class="post-media img-fluid" />`;
-        } else if (['mp4', 'mov'].includes(mediaType)) {
-            mediaContent = `<video src="${mediaUrl}" controls class="post-media img-fluid"></video>`;
-        }
+            // Thêm sự kiện onclick để mở modal
+            if (['jpg', 'jpeg', 'png'].includes(mediaType)) {
+                return `<img src="${mediaUrl}" alt="Post media" class="post-media img-fluid" onclick="openMediaPreview('${mediaUrl}', 'image')" />`;
+            } else if (['mp4', 'mov'].includes(mediaType)) {
+                return `<video src="${mediaUrl}" controls class="post-media img-fluid" onclick="openMediaPreview('${mediaUrl}', 'video')"></video>`;
+            }
+            return '';
+        }).join('');
+
+        mediaContent = `
+            <div class="media-container media-count-${mediaCount}">
+                ${mediaItems}
+            </div>
+        `;
     }
 
     // Tạo HTML cho bài viết
@@ -52,11 +63,9 @@ function createPostElement(post) {
                     <li><button class="dropdown-item edit-post" data-id="${post.id}">Chỉnh sửa</button></li>
                     <li><button class="dropdown-item delete-post" data-id="${post.id}">Xóa</button></li>
                 ` : `<li><button class="dropdown-item report-post" data-id="${post.id}">Báo cáo</button></li>`}
-                
                 </ul>
             </div>
         </div>
-
 <!-- Modal chọn lý do báo cáo -->
 <div class="modal fade" id="reportPostModal" tabindex="-1" aria-labelledby="reportPostModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -93,7 +102,6 @@ function createPostElement(post) {
   </div>
 </div>
 
-
         <div class="post-content">
             <h2>${post.content}</h2>
             ${mediaContent}
@@ -109,11 +117,29 @@ function createPostElement(post) {
         </div>
     `;
 
-    // Tách phần like và comment ra ngoài hàm
     handleLikeButton(post, postElement);
     handleCommentButton(post, postElement);
 
     return postElement;
+}
+
+// Hàm mở modal xem ảnh/video chi tiết
+function openMediaPreview(mediaUrl, mediaType) {
+    const mediaPreviewContent = document.getElementById("mediaPreviewContent");
+
+    // Xóa nội dung cũ trong modal
+    mediaPreviewContent.innerHTML = '';
+
+    // Tạo phần tử media tương ứng
+    if (mediaType === 'image') {
+        mediaPreviewContent.innerHTML = `<img src="${mediaUrl}" alt="Media preview" class="img-fluid" style="max-height: 80vh; max-width: 100%;" />`;
+    } else if (mediaType === 'video') {
+        mediaPreviewContent.innerHTML = `<video src="${mediaUrl}" controls autoplay class="img-fluid" style="max-height: 80vh; max-width: 100%;"></video>`;
+    }
+
+    // Mở modal
+    const mediaPreviewModal = new bootstrap.Modal(document.getElementById("mediaPreviewModal"));
+    mediaPreviewModal.show();
 }
 
 // Xử lý sự kiện Like
@@ -131,27 +157,27 @@ function handleLikeButton(post, postElement) {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
         })
-                    // Kiểm tra nếu nút đã được "liked"
-                if (isLiked) {
-                    // Nếu đã thích thì thay đổi trạng thái thành chưa thích
-                    likeBtn.classList.remove("text-danger");
-                    likeBtn.classList.remove("bi-heart-fill");
-                    likeBtn.classList.add("bi-heart");
-                    newLikeCount -= 1; // Giảm số người thích
-                } else {
-                    // Nếu chưa thích thì thay đổi trạng thái thành đã thích
-                    likeBtn.classList.add("text-danger");
-                    likeBtn.classList.add("bi-heart-fill");
-                    likeBtn.classList.remove("bi-heart");
-                    newLikeCount += 1; // Tăng số người thích
-                }
+        // Kiểm tra nếu nút đã được "liked"
+        if (isLiked) {
+            // Nếu đã thích thì thay đổi trạng thái thành chưa thích
+            likeBtn.classList.remove("text-danger");
+            likeBtn.classList.remove("bi-heart-fill");
+            likeBtn.classList.add("bi-heart");
+            newLikeCount -= 1; // Giảm số người thích
+        } else {
+            // Nếu chưa thích thì thay đổi trạng thái thành đã thích
+            likeBtn.classList.add("text-danger");
+            likeBtn.classList.add("bi-heart-fill");
+            likeBtn.classList.remove("bi-heart");
+            newLikeCount += 1; // Tăng số người thích
+        }
 
-                // Cập nhật trạng thái liked
-                isLiked = !isLiked;
+        // Cập nhật trạng thái liked
+        isLiked = !isLiked;
 
-                // Cập nhật số lượng người thích trên giao diện
-                likeBtn.textContent = ` Yêu thích (${newLikeCount})`;
-        })
+        // Cập nhật số lượng người thích trên giao diện
+        likeBtn.textContent = ` Yêu thích (${newLikeCount})`;
+    })
 
 }
 
@@ -465,13 +491,39 @@ $(document).ready(function() {
         });
     });
 });
+// Biến để lưu trữ danh sách các tệp đã chọn
+let selectedFiles = [];
 
-// Xử lý thay đổi media khi tạo bài viết mới
+// Xử lý sự kiện thay đổi file để hiển thị trước
 document.getElementById("postMedia").addEventListener("change", function (event) {
     const files = event.target.files;
     const uploadContainer = document.getElementById("mediaUploadContainer");
 
-    Array.from(files).forEach((file) => {
+    // Log số lượng tệp ngay khi chọn
+    console.log("Số tệp được chọn trong sự kiện change:", files.length);
+    for (let i = 0; i < files.length; i++) {
+        console.log(`Tệp ${i + 1} trong change: ${files[i].name}`);
+    }
+
+    // Thêm các tệp mới vào danh sách selectedFiles
+    Array.from(files).forEach(file => {
+        // Kiểm tra xem tệp đã tồn tại trong selectedFiles chưa (dựa trên tên và kích thước)
+        const isDuplicate = selectedFiles.some(existingFile =>
+            existingFile.name === file.name && existingFile.size === file.size
+        );
+        if (!isDuplicate) {
+            selectedFiles.push(file);
+        }
+    });
+
+    // Log danh sách tệp hiện tại
+    console.log("Danh sách tệp hiện tại:", selectedFiles.map(file => file.name));
+
+    // Xóa các media cũ trước khi hiển thị lại
+    uploadContainer.querySelectorAll(".media-item").forEach(item => item.remove());
+
+    // Hiển thị tất cả các tệp trong selectedFiles
+    selectedFiles.forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = function (e) {
             const mediaItem = document.createElement("div");
@@ -491,9 +543,14 @@ document.getElementById("postMedia").addEventListener("change", function (event)
             // Thêm nút xóa
             const removeBtn = document.createElement("button");
             removeBtn.classList.add("remove-btn");
-            removeBtn.innerHTML = "&times;";
+            removeBtn.innerHTML = "×";
             removeBtn.onclick = function () {
+                // Xóa tệp khỏi selectedFiles
+                selectedFiles.splice(index, 1);
+                // Cập nhật lại giao diện
                 mediaItem.remove();
+                // Log danh sách tệp sau khi xóa
+                console.log("Danh sách tệp sau khi xóa:", selectedFiles.map(file => file.name));
             };
             mediaItem.appendChild(removeBtn);
 
@@ -503,110 +560,249 @@ document.getElementById("postMedia").addEventListener("change", function (event)
     });
 });
 
-// Xử lý tạo bài viết mới
+// Xử lý gửi bài viết
 document.getElementById("postSubmitBtn").addEventListener("click", function () {
     const content = document.getElementById("postContent").value.trim();
-    const mediaFiles = document.getElementById("postMedia").files;
+
+    // Log số lượng tệp media được chọn khi nhấn Post
+    console.log("Số lượng tệp media được chọn khi gửi:", selectedFiles.length);
+    for (let i = 0; i < selectedFiles.length; i++) {
+        console.log(`Tệp ${i + 1}:`, selectedFiles[i].name, `- Loại: ${selectedFiles[i].type}, Kích thước: ${selectedFiles[i].size} bytes`);
+    }
 
     // Kiểm tra nếu cả content và media đều trống
-    if (!content && mediaFiles.length === 0) {
+    if (!content && selectedFiles.length === 0) {
         alert("Bạn phải nhập nội dung hoặc tải lên ít nhất một tệp media!");
         return;
     }
 
-    const postData = {
-        content: content || "      ", // Nếu content trống, đặt là null
-        media: [], // Mảng media để lưu dữ liệu file
-    };
+    const formData = new FormData();
+    formData.append("content", content || " ");
 
-    // Nếu không có media, gửi ngay yêu cầu
-    if (mediaFiles.length === 0) {
-        createPost(postData);
-        return;
+    // Thêm tất cả các tệp từ selectedFiles vào FormData
+    for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append("media", selectedFiles[i]);
+        console.log(`Đã thêm tệp ${i + 1} vào FormData:`, selectedFiles[i].name);
     }
 
-    // Convert media files thành các đối tượng MediaDto
-    for (let i = 0; i < mediaFiles.length; i++) {
-        const file = mediaFiles[i];
-        const reader = new FileReader();
-
-        reader.onloadend = function () {
-            postData.media.push({
-                url: reader.result, // Chuỗi Base64
-                type: file.type, // 'image/jpeg', 'video/mp4', v.v.
-            });
-
-            if (postData.media.length === mediaFiles.length) {
-                createPost(postData); // Gửi yêu cầu sau khi xử lý tất cả media
-            }
-        };
-
-        reader.readAsDataURL(file);
-    }
-});
-
-// Hàm gửi yêu cầu tạo bài viết
-function createPost(postData) {
+    console.log("Đang gửi yêu cầu tạo bài viết với FormData...");
     fetch("/post", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(postData),
+        body: formData,
     })
-        .then((response) => response.json())
+        .then((response) => {
+            console.log("Đã nhận phản hồi từ server, trạng thái:", response.status);
+            return response.json();
+        })
         .then((data) => {
-            fetchPosts(); // Lấy lại danh sách bài viết sau khi tạo
-            const createPostModal = bootstrap.Modal.getInstance(
-                document.getElementById("createPostModal")
-            );
-            createPostModal.hide();
+            console.log("Phản hồi từ server:", data);
+            if (data.status === 200) {
+                console.log("Tạo bài viết thành công! Số tệp media đã gửi:", selectedFiles.length);
+                // Reset form
+                document.getElementById("postContent").value = "";
+                document.getElementById("postMedia").value = ""; // Reset input file
+                selectedFiles = []; // Reset danh sách tệp
+                const uploadContainer = document.getElementById("mediaUploadContainer");
+                uploadContainer.querySelectorAll(".media-item").forEach(item => item.remove()); // Xóa media hiển thị
+                fetchPosts();
+                const createPostModal = bootstrap.Modal.getInstance(document.getElementById("createPostModal"));
+                createPostModal.hide();
+            } else {
+                console.log("Tạo bài viết thất bại! Phản hồi:", data);
+                alert("Tạo bài viết thất bại!");
+            }
         })
         .catch((error) => {
-            console.error("Error creating post:", error);
+            console.error("Lỗi khi tạo bài viết:", error);
+            alert("Đã xảy ra lỗi khi đăng bài!");
         });
-}
-
+});
+let editSelectedFiles = []; // Media mới được thêm
+let editCurrentMedia = []; // Media hiện tại của bài viết
+let mediaToDelete = []; // Danh sách media cần xóa
 
 document.addEventListener("click", function (event) {
     if (event.target.classList.contains("edit-post")) {
         const postId = event.target.getAttribute("data-id");
-        const postContent = event.target.closest(".post-box").querySelector(".post-content h2").innerText;
+        const postBox = event.target.closest(".post-box");
+        const postContent = postBox.querySelector(".post-content h2").innerText;
 
         // Đưa dữ liệu vào modal
         document.getElementById("editPostId").value = postId;
         document.getElementById("editPostContent").value = postContent;
+
+        // Lấy danh sách media hiện tại từ bài viết
+        const mediaContainer = postBox.querySelector(".media-container");
+        editCurrentMedia = [];
+        mediaToDelete = [];
+        editSelectedFiles = [];
+
+        if (mediaContainer) {
+            const mediaItems = mediaContainer.querySelectorAll(".post-media");
+            mediaItems.forEach((media, index) => {
+                editCurrentMedia.push({
+                    url: media.src,
+                    type: media.tagName === "IMG" ? "image" : "video",
+                    index: index
+                });
+            });
+        }
+
+        // Hiển thị media hiện tại trong modal
+        const editCurrentMediaContainer = document.getElementById("editCurrentMediaContainer");
+        editCurrentMediaContainer.innerHTML = "";
+        editCurrentMedia.forEach((media, index) => {
+            const mediaItem = document.createElement("div");
+            mediaItem.classList.add("current-media-item");
+
+            if (media.type === "image") {
+                mediaItem.innerHTML = `<img src="${media.url}" alt="Current media" />`;
+            } else {
+                mediaItem.innerHTML = `<video src="${media.url}" controls></video>`;
+            }
+
+            const removeBtn = document.createElement("button");
+            removeBtn.classList.add("remove-btn");
+            removeBtn.innerHTML = "×";
+            removeBtn.onclick = function () {
+                mediaToDelete.push(media.url); // Thêm URL vào danh sách cần xóa
+                editCurrentMedia.splice(index, 1); // Xóa khỏi danh sách hiện tại
+                mediaItem.remove(); // Xóa khỏi giao diện
+                console.log("Media cần xóa:", mediaToDelete);
+            };
+            mediaItem.appendChild(removeBtn);
+
+            editCurrentMediaContainer.appendChild(mediaItem);
+        });
 
         // Hiển thị modal
         const editModal = new bootstrap.Modal(document.getElementById("editPostModal"));
         editModal.show();
     }
 });
+// Xử lý sự kiện thay đổi file trong modal chỉnh sửa
+document.getElementById("editPostMedia").addEventListener("change", function (event) {
+    const files = event.target.files;
+    const uploadContainer = document.getElementById("editMediaUploadContainer");
 
+    // Log số lượng tệp ngay khi chọn
+    console.log("Số tệp được chọn trong modal chỉnh sửa:", files.length);
+    for (let i = 0; i < files.length; i++) {
+        console.log(`Tệp ${i + 1} trong change: ${files[i].name}`);
+    }
 
+    // Thêm các tệp mới vào danh sách editSelectedFiles
+    Array.from(files).forEach(file => {
+        const isDuplicate = editSelectedFiles.some(existingFile =>
+            existingFile.name === file.name && existingFile.size === file.size
+        );
+        if (!isDuplicate) {
+            editSelectedFiles.push(file);
+        }
+    });
 
+    // Log danh sách tệp hiện tại
+    console.log("Danh sách tệp mới:", editSelectedFiles.map(file => file.name));
+
+    // Xóa các media cũ trước khi hiển thị lại
+    uploadContainer.querySelectorAll(".media-item").forEach(item => item.remove());
+
+    // Hiển thị tất cả các tệp trong editSelectedFiles
+    editSelectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const mediaItem = document.createElement("div");
+            mediaItem.classList.add("media-item");
+
+            if (file.type.startsWith("image/")) {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                mediaItem.appendChild(img);
+            } else if (file.type.startsWith("video/")) {
+                const video = document.createElement("video");
+                video.src = e.target.result;
+                video.controls = true;
+                mediaItem.appendChild(video);
+            }
+
+            const removeBtn = document.createElement("button");
+            removeBtn.classList.add("remove-btn");
+            removeBtn.innerHTML = "×";
+            removeBtn.onclick = function () {
+                editSelectedFiles.splice(index, 1);
+                mediaItem.remove();
+                console.log("Danh sách tệp mới sau khi xóa:", editSelectedFiles.map(file => file.name));
+            };
+            mediaItem.appendChild(removeBtn);
+
+            uploadContainer.appendChild(mediaItem);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+// Xử lý lưu thay đổi bài viết
 document.getElementById("saveEditPost").addEventListener("click", function () {
     const postId = document.getElementById("editPostId").value;
     const newContent = document.getElementById("editPostContent").value;
 
-    // Gửi yêu cầu cập nhật lên server (giả sử API là /updatePost)
+    // Tạo FormData để gửi dữ liệu
+    const formData = new FormData();
+    formData.append("content", newContent);
+    formData.append("mediaToDelete", JSON.stringify(mediaToDelete)); // Danh sách URL media cần xóa
+
+    // Thêm các tệp media mới vào FormData
+    for (let i = 0; i < editSelectedFiles.length; i++) {
+        formData.append("media", editSelectedFiles[i]);
+    }
+
+    // Gửi yêu cầu cập nhật lên server
     fetch(`/post/${postId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,},
-        body: JSON.stringify({ id: postId, content: newContent })
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
     })
         .then(response => response.json())
         .then(data => {
-            if (data.status== 200) {
+            if (data.status === 200) {
                 // Cập nhật nội dung bài viết trên giao diện
                 const postElement = document.querySelector(`.edit-post[data-id="${postId}"]`).closest(".post-box");
                 postElement.querySelector(".post-content h2").innerText = newContent;
 
-                // Đóng modal
+                // Cập nhật media trên giao diện
+                const mediaContainer = postElement.querySelector(".media-container");
+                if (mediaContainer) {
+                    mediaContainer.remove(); // Xóa media cũ
+                }
+
+                if (data.data.media && data.data.media.length > 0) {
+                    const newMediaContainer = document.createElement("div");
+                    newMediaContainer.classList.add("media-container", `media-count-${data.data.media.length}`);
+                    data.data.media.forEach(mediaItem => {
+                        const mediaUrl = mediaItem.media.url;
+                        const mediaType = mediaUrl.split('.').pop().toLowerCase();
+                        if (['jpg', 'jpeg', 'png'].includes(mediaType)) {
+                            newMediaContainer.innerHTML += `<img src="${mediaUrl}" alt="Post media" class="post-media img-fluid" onclick="openMediaPreview('${mediaUrl}', 'image')" />`;
+                        } else if (['mp4', 'mov'].includes(mediaType)) {
+                            newMediaContainer.innerHTML += `<video src="${mediaUrl}" controls class="post-media img-fluid" onclick="openMediaPreview('${mediaUrl}', 'video')"></video>`;
+                        }
+                    });
+                    postElement.querySelector(".post-content").appendChild(newMediaContainer);
+                }
+
+                // Đóng modal và reset
                 const editModal = bootstrap.Modal.getInstance(document.getElementById("editPostModal"));
                 editModal.hide();
+                editSelectedFiles = [];
+                editCurrentMedia = [];
+                mediaToDelete = [];
+                document.getElementById("editMediaUploadContainer").querySelectorAll(".media-item").forEach(item => item.remove());
+                fetchPosts();
             } else {
                 alert("Cập nhật thất bại!");
             }

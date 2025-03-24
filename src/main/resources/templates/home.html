@@ -39,7 +39,7 @@
                         <i class="bi bi-camera"></i>
                         <span>Thêm ảnh/video</span>
                     </label>
-                    <input class="form-control d-none" type="file" id="postMedia" accept="image/*,video/*" multiple>
+                    <input class="form-control d-none" type="file" id="postMedia" multiple accept="image/*,video/*" >
                 </div>
             </div>
             <div class="modal-footer">
@@ -49,6 +49,20 @@
         </div>
     </div>
 </div>
+    <!-- Modal xem ảnh/video chi tiết -->
+    <div class="modal fade" id="mediaPreviewModal" tabindex="-1" aria-labelledby="mediaPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mediaPreviewModalLabel">Xem chi tiết</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="mediaPreviewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modal Chỉnh Sửa Bài Viết -->
     <div class="modal fade" id="editPostModal" tabindex="-1" aria-labelledby="editPostModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -58,8 +72,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <textarea id="editPostContent" class="form-control" rows="4"></textarea>
+                    <textarea id="editPostContent" class="form-control mb-3" rows="4" placeholder="Nội dung bài viết"></textarea>
                     <input type="hidden" id="editPostId">
+
+                    <!-- Media upload container -->
+                    <div id="editMediaUploadContainer" class="media-upload-container">
+                        <label for="editPostMedia" class="media-placeholder">
+                            <i class="bi bi-camera"></i>
+                            <span>Thêm ảnh/video</span>
+                        </label>
+                        <input class="form-control d-none" type="file" id="editPostMedia" multiple accept="image/*,video/*">
+                    </div>
+                    <!-- Danh sách media hiện tại -->
+                    <div id="editCurrentMediaContainer" class="current-media-container mt-2"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -68,7 +93,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="/js/home.js" ></script>
     <script src="/js/post.js" ></script>

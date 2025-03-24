@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PostService implements IPostService {
@@ -67,31 +68,35 @@ public class PostService implements IPostService {
         postEntity.setContent(postRequest.getContent());
         postEntity.setAuthor(author);
         postEntity.setTimestamp(LocalDateTime.now());
-        try {
-            postRepository.save(postEntity);
-        } catch (Exception e) {
-            throw new AppException(ErrorCode.POST_CREATION_FAILED);
-        }
+        postRepository.save(postEntity);
 
-        List<MediaEntity> mediaEntities = new ArrayList<>();
         if (postRequest.getMedia() != null && !postRequest.getMedia().isEmpty()) {
-            if (postRequest.getMedia().size() > 10) { // Giả sử giới hạn là 10 media
+            if (postRequest.getMedia().size() > 10) {
                 throw new AppException(ErrorCode.POST_MEDIA_LIMIT_EXCEEDED);
             }
-            for (MediaDto file : postRequest.getMedia()) {
-                try {
-                    var uploadResult = cloudinary.uploader().upload(file.getUrl(), ObjectUtils.emptyMap());
-                    String mediaUrl = uploadResult.get("secure_url").toString();
-                    String mediaType = file.getType().startsWith("image") ? "IMAGE" : "VIDEO";
-                    MediaEntity mediaEntity = new MediaEntity();
-                    mediaEntity.setUrl(mediaUrl);
-                    mediaEntity.setType(mediaType);
-                    mediaEntities.add(mediaEntity);
-                } catch (Exception e) {
-                    throw new AppException(ErrorCode.MEDIA_UPLOAD_FAILED);
+
+            List<MediaEntity> mediaEntities = new ArrayList<>();
+            for (MediaDto mediaDto : postRequest.getMedia()) {
+                // Kiểm tra dữ liệu file
+                if (mediaDto.getUrl() == null || mediaDto.getUrl().length == 0) {
+                    throw new AppException(ErrorCode.MEDIA_DATA_INVALID);
                 }
+
+                String resourceType = mediaDto.getType().startsWith("image") ? "image" : "video";
+                Map uploadParams = ObjectUtils.asMap("resource_type", resourceType);
+
+                // Upload lên Cloudinary
+                Map uploadResult = cloudinary.uploader().upload(mediaDto.getUrl(), uploadParams);
+                String mediaUrl = uploadResult.get("secure_url").toString();
+                String mediaType = mediaDto.getType().startsWith("image") ? "IMAGE" : "VIDEO";
+
+                MediaEntity mediaEntity = new MediaEntity();
+                mediaEntity.setUrl(mediaUrl);
+                mediaEntity.setType(mediaType);
+                mediaEntities.add(mediaEntity);
             }
 
+            // Lưu media và liên kết với bài viết
             for (MediaEntity media : mediaEntities) {
                 media = mediaRepository.save(media);
                 PostMediaEntity postMedia = new PostMediaEntity();
@@ -122,11 +127,84 @@ public class PostService implements IPostService {
             throw new AppException(ErrorCode.POST_VISIBILITY_UNAUTHORIZED);
         }
 
+        System.out.println("Bắt đầu cập nhật bài viết: " + postEntity.getId());
+
+        // Cập nhật nội dung
         postEntity.setContent(postRequestDto.getContent());
+
+        if (postRequestDto.getMediaToDelete() != null && !postRequestDto.getMediaToDelete().isEmpty()) {
+            List<PostMediaEntity> postMediaEntities = postMediaRepository.findByPostId(postEntity.getId());
+            for (PostMediaEntity postMedia : new ArrayList<>(postMediaEntities)) {
+                if (postRequestDto.getMediaToDelete().contains(postMedia.getMedia().getUrl())) {
+                    try {
+                        // Lấy publicId từ URL
+                        String url = postMedia.getMedia().getUrl();
+                        String[] urlParts = url.split("/");
+                        String fileName = urlParts[urlParts.length - 1];
+                        String publicId = fileName.split("\\.")[0];
+
+                        // Xóa trên Cloudinary
+                        cloudinary.uploader().destroy(
+                                publicId,
+                                ObjectUtils.asMap("resource_type", postMedia.getMedia().getType().equals("IMAGE") ? "image" : "video")
+                        );
+
+                        // Xóa liên kết PostMediaEntity
+                        postMediaRepository.delete(postMedia);
+
+                        // Xóa MediaEntity
+                        mediaRepository.delete(postMedia.getMedia());
+
+                        // Không cần gọi postEntity.getPostMedia().remove(postMedia) vì Hibernate sẽ tự động cập nhật danh sách
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi xóa media trên Cloudinary: " + e.getMessage());
+                    }
+                }
+            }
+        }
+        // Thêm media mới nếu có
+        if (postRequestDto.getMedia() != null && !postRequestDto.getMedia().isEmpty()) {
+            if (postRequestDto.getMedia().size() > 10) {
+                throw new AppException(ErrorCode.POST_MEDIA_LIMIT_EXCEEDED);
+            }
+
+            List<MediaEntity> mediaEntities = new ArrayList<>();
+            for (MediaDto mediaDto : postRequestDto.getMedia()) {
+                if (mediaDto.getUrl() == null || mediaDto.getUrl().length == 0) {
+                    throw new AppException(ErrorCode.MEDIA_DATA_INVALID);
+                }
+
+                String resourceType = mediaDto.getType().startsWith("image") ? "image" : "video";
+                Map uploadParams = ObjectUtils.asMap("resource_type", resourceType);
+
+                Map uploadResult = cloudinary.uploader().upload(mediaDto.getUrl(), uploadParams);
+                String mediaUrl = uploadResult.get("secure_url").toString();
+                String mediaType = mediaDto.getType().startsWith("image") ? "IMAGE" : "VIDEO";
+
+                MediaEntity mediaEntity = new MediaEntity();
+                mediaEntity.setUrl(mediaUrl);
+                mediaEntity.setType(mediaType);
+                mediaEntities.add(mediaEntity);
+            }
+
+            for (MediaEntity media : mediaEntities) {
+                media = mediaRepository.save(media);
+                PostMediaEntity postMedia = new PostMediaEntity();
+                postMedia.setPost(postEntity);
+                postMedia.setMedia(media);
+                postMediaRepository.save(postMedia);
+            }
+        }
+
         try {
-            return postRepository.save(postEntity);
+            System.out.println("Lưu bài viết: " + postEntity.getId());
+            PostEntity existingPost = postRepository.findById(postEntity.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "Bài viết đã bị xóa"));
+            PostEntity updatedPost = postRepository.save(postEntity);
+            System.out.println("Lưu bài viết thành công: " + updatedPost.getId());
+            return updatedPost;
         } catch (Exception e) {
-            throw new AppException(ErrorCode.POST_UPDATE_FAILED);
+            throw new AppException(ErrorCode.POST_UPDATE_FAILED, "Lỗi khi lưu bài viết: " + e.getMessage());
         }
     }
 
