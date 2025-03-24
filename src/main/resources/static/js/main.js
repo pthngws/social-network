@@ -76,18 +76,27 @@ document.addEventListener("DOMContentLoaded", function () {
         notificationsList.empty();
         let unreadCount = 0;
 
-        if (!notifications || !Array.isArray(notifications)) return;
+        // Kiểm tra nếu notifications không tồn tại, không phải mảng, hoặc rỗng
+        if (!notifications || !Array.isArray(notifications) || notifications.length === 0) {
+            const noNotificationItem = `
+            <p class="text-center text-muted">Không có lời mời nào.</p>
+        `;
+            notificationsList.append(noNotificationItem);
+            $("#notificationCount").text(0); // Đặt số thông báo chưa đọc về 0
+            return;
+        }
 
+        // Nếu có thông báo, hiển thị như bình thường
         notifications.reverse().forEach(notification => {
             if (notification.isRead === 0) unreadCount++;
             const notificationItem = `
-                <div class="dropdown-item" style="padding-left: 20px">
-                    <div class="notification-item align-items-center">
-                        <p class="m-0 fw-bold">${notification.content}</p>
-                        <small class="text-muted">${timeAgo(notification.date)}</small>
-                    </div>
+            <div class="dropdown-item" style="padding-left: 20px">
+                <div class="notification-item align-items-center">
+                    <p class="m-0 fw-bold">${notification.content}</p>
+                    <small class="text-muted">${timeAgo(notification.date)}</small>
                 </div>
-            `;
+            </div>
+        `;
             notificationsList.append(notificationItem);
         });
 

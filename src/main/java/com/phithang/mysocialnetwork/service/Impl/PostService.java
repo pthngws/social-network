@@ -211,27 +211,65 @@ public class PostService implements IPostService {
     @Transactional
     @Override
     public boolean deletePost(Long id) {
+        // Kiểm tra xác thực người dùng
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
+
+        // Lấy email người dùng hiện tại
         String email = authentication.getName();
         UserEntity userEntity = userService.findUserByEmail(email);
         if (userEntity == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
+
+        // Tìm bài viết
         PostEntity postEntity = postRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+
+        // Kiểm tra quyền xóa bài viết
         if (!postEntity.getAuthor().getId().equals(userEntity.getId())) {
             throw new AppException(ErrorCode.POST_VISIBILITY_UNAUTHORIZED);
         }
+
         try {
-            commentRepository.deleteByPostId(id);
+            // 1. Xóa các thông báo liên quan đến bài viết
             notificationRepository.deleteByPostId(id);
+
+            commentRepository.deleteByPostId(id);
+
+            List<PostMediaEntity> postMediaEntities = postMediaRepository.findByPostId(id);
+            for (PostMediaEntity postMedia : postMediaEntities) {
+                MediaEntity media = postMedia.getMedia();
+                if (media != null) {
+                    // Delete from Cloudinary
+                    String publicId = media.getUrl().substring(media.getUrl().lastIndexOf("/") + 1).split("\\.")[0];
+                    cloudinary.uploader().destroy(publicId, Map.of("resource_type", media.getType().equals("IMAGE") ? "image" : "video"));
+
+                    // Set media reference to null and save
+                    postMedia.setMedia(null);
+                    postMediaRepository.save(postMedia);
+
+                    // Delete entities
+                    mediaRepository.delete(media);
+                    postMediaRepository.delete(postMedia);
+                }
+            }
+
+            // 4. Xóa các lượt thích (bản ghi trong bảng post_likes)
+            postEntity.getLikedBy().clear(); // Xóa quan hệ ManyToMany
+            postRepository.save(postEntity); // Cần lưu để cập nhật bảng post_likes
+
+
+            // 5. Xóa bài viết
             postRepository.delete(postEntity);
+
+
             return true;
         } catch (Exception e) {
-            throw new AppException(ErrorCode.POST_DELETE_FAILED);
+
+            throw new AppException(ErrorCode.POST_DELETE_FAILED, "Failed to delete post: " + e.getMessage());
         }
     }
 

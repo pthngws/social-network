@@ -38,11 +38,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserEntity findUserByEmail(String email) {
-        UserEntity user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND_BY_EMAIL);
-        }
-        return user;
+        return userRepository.findByEmail(email);
     }
 
     @Override
