@@ -11,6 +11,7 @@ import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,7 +30,7 @@ public class ReportService implements IReportService {
 
     @Override
     public boolean saveReport(ReportRequest reportRequest) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }

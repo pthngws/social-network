@@ -593,7 +593,8 @@ document.getElementById("saveEditPost").addEventListener("click", function () {
     // Gửi yêu cầu cập nhật lên server (giả sử API là /updatePost)
     fetch(`/post/${postId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,},
         body: JSON.stringify({ id: postId, content: newContent })
     })
         .then(response => response.json())
@@ -645,6 +646,7 @@ function report() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(reportDto)
         })

@@ -72,9 +72,6 @@ public class FriendshipService implements IFriendshipService {
     @Override
     public FriendshipEntity findBySenderAndReceiver(UserEntity sender, UserEntity receiver) {
         FriendshipEntity friendship = friendshipRepository.findBySenderAndReceiver(sender, receiver);
-        if (friendship == null) {
-            throw new AppException(ErrorCode.FRIENDSHIP_NOT_FOUND);
-        }
         return friendship;
     }
 
