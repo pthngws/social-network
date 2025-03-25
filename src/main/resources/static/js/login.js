@@ -27,7 +27,7 @@ $(document).ready(function () {
 
     async function fetchOAuthToken() {
         try {
-            const response = await fetch("http://localhost:8080/auth/oauth2-login", {
+            const response = await fetch("/auth/oauth2-login", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include" // Gửi cookie
