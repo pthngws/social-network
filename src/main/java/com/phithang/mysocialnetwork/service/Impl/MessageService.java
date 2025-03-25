@@ -11,8 +11,11 @@ import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageService implements IMessageService {
@@ -42,7 +45,7 @@ public class MessageService implements IMessageService {
         if (sender == null || receiver == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-
+        chatEntity.setTimestamp(LocalDateTime.now());
         MessageEntity messageEntity = new MessageEntity();
         messageEntity.setContent(chatEntity.getContent());
         messageEntity.setReceiver(receiver);
@@ -60,7 +63,19 @@ public class MessageService implements IMessageService {
     }
 
     @Override
-    public List<MessageEntity> findAll() {
-        return chatRepository.findAll();
+    public List<Map<String, Object>> findMessagesBetweenUsers(Long senderId, Long receiverId) {
+        return chatRepository.findAll().stream()
+                .filter(row -> (row.getSender().getId().equals(senderId) && row.getReceiver().getId().equals(receiverId)) ||
+                        (row.getSender().getId().equals(receiverId) && row.getReceiver().getId().equals(senderId)))
+                .map(row -> {
+                    Map<String, Object> messageMap = new HashMap<>();
+                    messageMap.put("id", row.getId());
+                    messageMap.put("contentMessage", row.getContent());
+                    messageMap.put("timestamp", row.getTimestamp());
+                    messageMap.put("senderID", row.getSender().getId());
+                    messageMap.put("receiverID", row.getReceiver().getId());
+                    return messageMap;
+                })
+                .collect(Collectors.toList());
     }
 }

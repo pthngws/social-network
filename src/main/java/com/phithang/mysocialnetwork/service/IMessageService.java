@@ -11,5 +11,5 @@ public interface IMessageService {
 
     MessageEntity save(MessageDto chatEntity);
 
-    List<MessageEntity> findAll();
+    List<Map<String, Object>> findMessagesBetweenUsers(Long senderId, Long receiverId);
 }
