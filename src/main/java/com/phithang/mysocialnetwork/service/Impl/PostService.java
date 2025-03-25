@@ -10,6 +10,7 @@ import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.exception.ErrorCode;
 import com.phithang.mysocialnetwork.repository.*;
 import com.phithang.mysocialnetwork.service.IPostService;
+import com.phithang.mysocialnetwork.service.IReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,9 @@ public class PostService implements IPostService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ReportRepository reportRepository;
 
     @Autowired
     private Cloudinary cloudinary;
@@ -225,7 +229,7 @@ public class PostService implements IPostService {
             // 1. Xóa các thông báo liên quan đến bài viết
             notificationRepository.deleteByPostId(id);
             commentRepository.deleteByPostId(id);
-
+            reportRepository.deleteByPostId(id);
             // 2. Xóa PostMediaEntity trước
             List<PostMediaEntity> postMediaEntities = postMediaRepository.findByPostId(id);
             for (PostMediaEntity postMedia : postMediaEntities) {
