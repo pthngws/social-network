@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService implements INotificationService {
@@ -29,27 +30,36 @@ public class NotificationService implements INotificationService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public List<NotificationEntity> getNotification() {
+    public List<NotifyResponse> getNotification() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if (email == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
+
         UserEntity user = userRepository.findByEmail(email);
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        return notificationRepository.findAllByUser(user);
+
+        return notificationRepository.findAllByUser(user)
+                .stream()
+                .map(this::mapToNotifyResponse)
+                .collect(Collectors.toList());
+    }
+
+    private NotifyResponse mapToNotifyResponse(NotificationEntity notification) {
+        NotifyResponse response = new NotifyResponse();
+        response.setContent(notification.getContent());
+        response.setDate(notification.getTimestamp());
+        response.setIsRead(notification.getIsread());
+        return response;
     }
 
     public void sendRealTimeNotification(NotificationEntity notification) {
         if (notification == null) {
             throw new AppException(ErrorCode.NOTIFICATION_NOT_FOUND);
         }
-        NotifyResponse response = new NotifyResponse();
-        response.setContent(notification.getContent());
-        response.setDate(notification.getTimestamp());
-        response.setIsRead(notification.getIsread());
-
+        NotifyResponse response = mapToNotifyResponse(notification);
         String destination = "/topic/notifications/" + notification.getUser().getEmail();
         messagingTemplate.convertAndSend(destination, response);
     }
@@ -58,6 +68,7 @@ public class NotificationService implements INotificationService {
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
+
         NotificationEntity notification = new NotificationEntity();
         notification.setUser(user);
         notification.setContent(content);
