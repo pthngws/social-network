@@ -2,10 +2,9 @@ package com.phithang.mysocialnetwork.service.Impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phithang.mysocialnetwork.dto.CommentDto;
-import com.phithang.mysocialnetwork.dto.MediaDto;
-import com.phithang.mysocialnetwork.dto.request.PostRequest;
-import com.phithang.mysocialnetwork.dto.request.PostUpdateRequest;
+import com.phithang.mysocialnetwork.dto.PostDto;
 import com.phithang.mysocialnetwork.entity.*;
 import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.exception.ErrorCode;
@@ -15,12 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService implements IPostService {
@@ -54,7 +53,7 @@ public class PostService implements IPostService {
 
     @Transactional
     @Override
-    public PostEntity createPost(PostRequest postRequest) throws IOException {
+    public PostEntity createPost(String content, List<MultipartFile> mediaFiles) throws IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -65,30 +64,30 @@ public class PostService implements IPostService {
         }
 
         PostEntity postEntity = new PostEntity();
-        postEntity.setContent(postRequest.getContent());
+        postEntity.setContent(content);
         postEntity.setAuthor(author);
         postEntity.setTimestamp(LocalDateTime.now());
         postRepository.save(postEntity);
 
-        if (postRequest.getMedia() != null && !postRequest.getMedia().isEmpty()) {
-            if (postRequest.getMedia().size() > 10) {
+        // Xử lý media
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            if (mediaFiles.size() > 10) {
                 throw new AppException(ErrorCode.POST_MEDIA_LIMIT_EXCEEDED);
             }
 
             List<MediaEntity> mediaEntities = new ArrayList<>();
-            for (MediaDto mediaDto : postRequest.getMedia()) {
-                // Kiểm tra dữ liệu file
-                if (mediaDto.getUrl() == null || mediaDto.getUrl().length == 0) {
+            for (MultipartFile file : mediaFiles) {
+                if (file.isEmpty()) {
                     throw new AppException(ErrorCode.MEDIA_DATA_INVALID);
                 }
 
-                String resourceType = mediaDto.getType().startsWith("image") ? "image" : "video";
+                String resourceType = file.getContentType().startsWith("image") ? "image" : "video";
                 Map uploadParams = ObjectUtils.asMap("resource_type", resourceType);
 
                 // Upload lên Cloudinary
-                Map uploadResult = cloudinary.uploader().upload(mediaDto.getUrl(), uploadParams);
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
                 String mediaUrl = uploadResult.get("secure_url").toString();
-                String mediaType = mediaDto.getType().startsWith("image") ? "IMAGE" : "VIDEO";
+                String mediaType = file.getContentType().startsWith("image") ? "IMAGE" : "VIDEO";
 
                 MediaEntity mediaEntity = new MediaEntity();
                 mediaEntity.setUrl(mediaUrl);
@@ -111,7 +110,7 @@ public class PostService implements IPostService {
 
     @Transactional
     @Override
-    public PostEntity updatePost(PostUpdateRequest postRequestDto) throws IOException {
+    public PostEntity updatePost(Long postId, String content, List<MultipartFile> mediaFiles, String mediaToDeleteJson) throws IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -121,65 +120,62 @@ public class PostService implements IPostService {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
 
-        PostEntity postEntity = postRepository.findById(postRequestDto.getId())
+        PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
         if (!postEntity.getAuthor().equals(author)) {
             throw new AppException(ErrorCode.POST_VISIBILITY_UNAUTHORIZED);
         }
 
-        System.out.println("Bắt đầu cập nhật bài viết: " + postEntity.getId());
+        // Cập nhật nội dung bài viết
+        postEntity.setContent(content);
 
-        // Cập nhật nội dung
-        postEntity.setContent(postRequestDto.getContent());
+        // Xử lý danh sách media cần xóa
+        if (mediaToDeleteJson != null && !mediaToDeleteJson.isEmpty()) {
+            List<String> mediaToDelete = Arrays.asList(new ObjectMapper().readValue(mediaToDeleteJson, String[].class));
+            if (!mediaToDelete.isEmpty()) {
+                List<PostMediaEntity> postMediaEntities = postMediaRepository.findByPostId(postEntity.getId());
+                for (PostMediaEntity postMedia : new ArrayList<>(postMediaEntities)) {
+                    if (mediaToDelete.contains(postMedia.getMedia().getUrl())) {
+                        try {
+                            // Lấy publicId từ URL
+                            String url = postMedia.getMedia().getUrl();
+                            String fileName = url.substring(url.lastIndexOf("/") + 1);
+                            String publicId = fileName.substring(0, fileName.lastIndexOf(".")); // Bỏ đuôi file
 
-        if (postRequestDto.getMediaToDelete() != null && !postRequestDto.getMediaToDelete().isEmpty()) {
-            List<PostMediaEntity> postMediaEntities = postMediaRepository.findByPostId(postEntity.getId());
-            for (PostMediaEntity postMedia : new ArrayList<>(postMediaEntities)) {
-                if (postRequestDto.getMediaToDelete().contains(postMedia.getMedia().getUrl())) {
-                    try {
-                        // Lấy publicId từ URL
-                        String url = postMedia.getMedia().getUrl();
-                        String[] urlParts = url.split("/");
-                        String fileName = urlParts[urlParts.length - 1];
-                        String publicId = fileName.split("\\.")[0];
+                            // Xóa trên Cloudinary
+                            cloudinary.uploader().destroy(publicId,
+                                    ObjectUtils.asMap("resource_type", postMedia.getMedia().getType().equals("IMAGE") ? "image" : "video"));
 
-                        // Xóa trên Cloudinary
-                        cloudinary.uploader().destroy(
-                                publicId,
-                                ObjectUtils.asMap("resource_type", postMedia.getMedia().getType().equals("IMAGE") ? "image" : "video")
-                        );
-
-                        // Xóa liên kết PostMediaEntity
-                        postMediaRepository.delete(postMedia);
-
-                        // Xóa MediaEntity
-                        mediaRepository.delete(postMedia.getMedia());
-
-                        // Không cần gọi postEntity.getPostMedia().remove(postMedia) vì Hibernate sẽ tự động cập nhật danh sách
-                    } catch (Exception e) {
-                        System.err.println("Lỗi khi xóa media trên Cloudinary: " + e.getMessage());
+                            // Xóa liên kết và media
+                            postMediaRepository.delete(postMedia);
+                            mediaRepository.delete(postMedia.getMedia());
+                        } catch (Exception e) {
+                            System.err.println("Lỗi khi xóa media trên Cloudinary: " + e.getMessage());
+                        }
                     }
                 }
             }
         }
+
         // Thêm media mới nếu có
-        if (postRequestDto.getMedia() != null && !postRequestDto.getMedia().isEmpty()) {
-            if (postRequestDto.getMedia().size() > 10) {
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            if (mediaFiles.size() > 10) {
                 throw new AppException(ErrorCode.POST_MEDIA_LIMIT_EXCEEDED);
             }
 
             List<MediaEntity> mediaEntities = new ArrayList<>();
-            for (MediaDto mediaDto : postRequestDto.getMedia()) {
-                if (mediaDto.getUrl() == null || mediaDto.getUrl().length == 0) {
+            for (MultipartFile file : mediaFiles) {
+                if (file.isEmpty()) {
                     throw new AppException(ErrorCode.MEDIA_DATA_INVALID);
                 }
 
-                String resourceType = mediaDto.getType().startsWith("image") ? "image" : "video";
+                String resourceType = file.getContentType().startsWith("image") ? "image" : "video";
                 Map uploadParams = ObjectUtils.asMap("resource_type", resourceType);
 
-                Map uploadResult = cloudinary.uploader().upload(mediaDto.getUrl(), uploadParams);
+                // Upload lên Cloudinary
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
                 String mediaUrl = uploadResult.get("secure_url").toString();
-                String mediaType = mediaDto.getType().startsWith("image") ? "IMAGE" : "VIDEO";
+                String mediaType = file.getContentType().startsWith("image") ? "IMAGE" : "VIDEO";
 
                 MediaEntity mediaEntity = new MediaEntity();
                 mediaEntity.setUrl(mediaUrl);
@@ -196,17 +192,9 @@ public class PostService implements IPostService {
             }
         }
 
-        try {
-            System.out.println("Lưu bài viết: " + postEntity.getId());
-            PostEntity existingPost = postRepository.findById(postEntity.getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "Bài viết đã bị xóa"));
-            PostEntity updatedPost = postRepository.save(postEntity);
-            System.out.println("Lưu bài viết thành công: " + updatedPost.getId());
-            return updatedPost;
-        } catch (Exception e) {
-            throw new AppException(ErrorCode.POST_UPDATE_FAILED, "Lỗi khi lưu bài viết: " + e.getMessage());
-        }
+        return postRepository.save(postEntity);
     }
+
 
     @Transactional
     @Override
@@ -236,42 +224,38 @@ public class PostService implements IPostService {
         try {
             // 1. Xóa các thông báo liên quan đến bài viết
             notificationRepository.deleteByPostId(id);
-
             commentRepository.deleteByPostId(id);
 
+            // 2. Xóa PostMediaEntity trước
             List<PostMediaEntity> postMediaEntities = postMediaRepository.findByPostId(id);
             for (PostMediaEntity postMedia : postMediaEntities) {
                 MediaEntity media = postMedia.getMedia();
                 if (media != null) {
-                    // Delete from Cloudinary
+                    // Xóa trên Cloudinary
                     String publicId = media.getUrl().substring(media.getUrl().lastIndexOf("/") + 1).split("\\.")[0];
                     cloudinary.uploader().destroy(publicId, Map.of("resource_type", media.getType().equals("IMAGE") ? "image" : "video"));
 
-                    // Set media reference to null and save
-                    postMedia.setMedia(null);
-                    postMediaRepository.save(postMedia);
-
-                    // Delete entities
-                    mediaRepository.delete(media);
+                    // **XÓA LIÊN KẾT POST_MEDIA TRƯỚC**
                     postMediaRepository.delete(postMedia);
+
+                    // **XÓA MEDIAENTITY SAU**
+                    mediaRepository.delete(media);
                 }
             }
 
-            // 4. Xóa các lượt thích (bản ghi trong bảng post_likes)
+            // 3. Xóa các lượt thích (bản ghi trong bảng post_likes)
             postEntity.getLikedBy().clear(); // Xóa quan hệ ManyToMany
-            postRepository.save(postEntity); // Cần lưu để cập nhật bảng post_likes
+            postRepository.save(postEntity); // Cập nhật bảng post_likes trước khi xóa bài viết
 
-
-            // 5. Xóa bài viết
+            // 4. Xóa bài viết
             postRepository.delete(postEntity);
-
 
             return true;
         } catch (Exception e) {
-
             throw new AppException(ErrorCode.POST_DELETE_FAILED, "Failed to delete post: " + e.getMessage());
         }
     }
+
 
     @Override
     public boolean likePost(Long id) {
@@ -342,36 +326,58 @@ public class PostService implements IPostService {
     }
 
     @Override
-    public List<PostEntity> getAllPost() {
-        return postRepository.findAll();
-    }
-
-    @Override
-    public List<PostEntity> getMyPost() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        String email = authentication.getName();
-        UserEntity userEntity = userService.findUserByEmail(email);
-        if (userEntity == null) {
+    public List<PostDto> getMyPostDtos() {
+        String email = getCurrentUserEmail();
+        UserEntity user = userService.findUserByEmail(email);
+        if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        return postRepository.findAllByAuthor(userEntity);
-    }
 
+        return convertToPostDtos(postRepository.findAllByAuthor(user), email);
+    }
     @Override
-    public List<PostEntity> getUserPosts(Long userId) {
-        UserEntity userEntity = userService.findById(userId);
-        if (userEntity == null) {
+    public List<PostDto> getAllPostDtos() {
+            return convertToPostDtos(postRepository.findAll(), getCurrentUserEmail());
+        }
+
+    private List<PostDto> convertToPostDtos(List<PostEntity> posts, String currentUserEmail) {
+        return posts.stream()
+                .map(post -> buildPostDto(post, currentUserEmail))
+                .sorted(Comparator.comparing(PostDto::getTimestamp).reversed())
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<PostDto> getUserPostsDto(Long userId) {
+        UserEntity user = userService.findById(userId);
+        if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        return postRepository.findAllByAuthor(userEntity);
+
+        String currentUserEmail = getCurrentUserEmail();
+        return postRepository.findAllByAuthor(user).stream()
+                .map(post -> buildPostDto(post, currentUserEmail))
+                .sorted(Comparator.comparing(PostDto::getTimestamp).reversed())
+                .collect(Collectors.toList());
     }
 
     @Override
     public PostEntity findById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+    }
+    private String getCurrentUserEmail() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    private PostDto buildPostDto(PostEntity postEntity, String currentUserEmail) {
+        PostDto postDto = new PostDto().toPostDto(postEntity);
+
+        boolean isLiked = Optional.ofNullable(postEntity.getLikedBy())
+                .orElse(new ArrayList<>())
+                .stream()
+                .anyMatch(user -> user.getEmail().equals(currentUserEmail));
+
+        postDto.setLiked(isLiked);
+        return postDto;
     }
 }

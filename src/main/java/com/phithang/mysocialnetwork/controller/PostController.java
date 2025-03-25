@@ -37,85 +37,31 @@ public class PostController {
     @Autowired
     private IReportService reportService;
 
-    private String getCurrentUserEmail() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-    }
-
-    private PostDto buildPostDto(PostEntity postEntity, String currentUserEmail) {
-        PostDto postDto = new PostDto().toPostDto(postEntity);
-
-        boolean isLiked = Optional.ofNullable(postEntity.getLikedBy())
-                .orElse(new ArrayList<>())
-                .stream()
-                .anyMatch(user -> user.getEmail().equals(currentUserEmail));
-
-        postDto.setLiked(isLiked);
-        return postDto;
-    }
-
     @GetMapping("/userpost/{id}")
     public ResponseEntity<ApiResponse<List<PostDto>>> getUserPosts(@PathVariable Long id) {
-        List<PostEntity> posts = postService.getUserPosts(id);
-        String currentUserEmail = getCurrentUserEmail();
-
-        List<PostDto> list = posts.stream()
-                .map(post -> buildPostDto(post, currentUserEmail))
-                .collect(Collectors.toList());
-        Collections.reverse(list);
-
-        return ResponseEntity.ok(new ApiResponse<>(200, list, "Get posts successful!"));
+        List<PostDto> posts = postService.getUserPostsDto(id);
+        return ResponseEntity.ok(new ApiResponse<>(200, posts, "Get posts successful!"));
     }
 
     @GetMapping("/myposts")
     public ResponseEntity<ApiResponse<List<PostDto>>> getMyPosts() {
-        List<PostEntity> posts = postService.getMyPost();
-        String currentUserEmail = getCurrentUserEmail();
-
-        List<PostDto> list = posts.stream()
-                .map(post -> buildPostDto(post, currentUserEmail))
-                .collect(Collectors.toList());
-        Collections.reverse(list);
-
-        return ResponseEntity.ok(new ApiResponse<>(200, list, "Get my posts successful!"));
+        List<PostDto> myPosts = postService.getMyPostDtos();
+        return ResponseEntity.ok(new ApiResponse<>(200, myPosts, "Get my posts successful!"));
     }
 
     @GetMapping("/posts")
     public ResponseEntity<ApiResponse<List<PostDto>>> getPosts() {
-        List<PostEntity> posts = postService.getAllPost();
-        String currentUserEmail = getCurrentUserEmail();
-
-        List<PostDto> list = posts.stream()
-                .map(post -> buildPostDto(post, currentUserEmail))
-                .collect(Collectors.toList());
-        Collections.reverse(list);
-
-        return ResponseEntity.ok(new ApiResponse<>(200, list, "Get all posts successful!"));
+        List<PostDto> allPosts = postService.getAllPostDtos();
+        return ResponseEntity.ok(new ApiResponse<>(200, allPosts, "Get all posts successful!"));
     }
 
     @PostMapping(value = "/post", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<PostEntity>> post(
             @RequestPart("content") String content,
             @RequestPart(value = "media", required = false) List<MultipartFile> mediaFiles) throws IOException {
-        PostRequest postRequest = new PostRequest();
-        postRequest.setContent(content);
-
-        if (mediaFiles != null && !mediaFiles.isEmpty()) {
-            List<MediaDto> mediaDtos = new ArrayList<>();
-            for (MultipartFile file : mediaFiles) {
-                if (file.isEmpty()) {
-                    return ResponseEntity.badRequest()
-                            .body(new ApiResponse<>(400, null, "File media rỗng"));
-                }
-                MediaDto mediaDto = new MediaDto();
-                mediaDto.setUrl(file.getBytes()); // Chuyển file thành byte[]
-                mediaDto.setType(file.getContentType());
-                mediaDtos.add(mediaDto);
-            }
-            postRequest.setMedia(mediaDtos);
-        }
 
         try {
-            PostEntity postEntity = postService.createPost(postRequest);
+            PostEntity postEntity = postService.createPost(content, mediaFiles); // Chỉ gọi service
             return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post created successfully!"));
         } catch (AppException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -126,42 +72,17 @@ public class PostController {
         }
     }
 
+
     @PutMapping(value = "/post/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<PostEntity>> update(
             @PathVariable Long id,
             @RequestPart("content") String content,
             @RequestPart(value = "media", required = false) List<MultipartFile> mediaFiles,
             @RequestPart(value = "mediaToDelete", required = false) String mediaToDeleteJson) throws IOException {
-        PostUpdateRequest postUpdateRequest = new PostUpdateRequest();
-        postUpdateRequest.setId(id);
-        postUpdateRequest.setContent(content);
-
-        // Xử lý danh sách media cần xóa
-        List<String> mediaToDelete = new ArrayList<>();
-        if (mediaToDeleteJson != null && !mediaToDeleteJson.isEmpty()) {
-            mediaToDelete = Arrays.asList(new ObjectMapper().readValue(mediaToDeleteJson, String[].class));
-        }
-        postUpdateRequest.setMediaToDelete(mediaToDelete);
-
-        // Xử lý media mới
-        if (mediaFiles != null && !mediaFiles.isEmpty()) {
-            List<MediaDto> mediaDtos = new ArrayList<>();
-            for (MultipartFile file : mediaFiles) {
-                if (file.isEmpty()) {
-                    return ResponseEntity.badRequest()
-                            .body(new ApiResponse<>(400, null, "File media rỗng"));
-                }
-                MediaDto mediaDto = new MediaDto();
-                mediaDto.setUrl(file.getBytes());
-                mediaDto.setType(file.getContentType());
-                mediaDtos.add(mediaDto);
-            }
-            postUpdateRequest.setMedia(mediaDtos);
-        }
 
         try {
-            PostEntity postEntity = postService.updatePost(postUpdateRequest);
-            return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post updated successfully!"));
+            PostEntity updatedPost = postService.updatePost(id, content, mediaFiles, mediaToDeleteJson);
+            return ResponseEntity.ok(new ApiResponse<>(200, updatedPost, "Post updated successfully!"));
         } catch (AppException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage()));
@@ -170,6 +91,7 @@ public class PostController {
                     .body(new ApiResponse<>(500, null, "Lỗi hệ thống: " + e.getMessage()));
         }
     }
+
 
     @DeleteMapping("/post/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
