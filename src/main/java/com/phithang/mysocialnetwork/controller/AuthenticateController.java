@@ -33,10 +33,10 @@ public class AuthenticateController {
 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setHttpOnly(true); // Ngăn JavaScript truy cập
+        cookie.setHttpOnly(true);
         cookie.setSecure(true);   // Chỉ gửi qua HTTPS (bỏ qua nếu dùng localhost HTTP)
-        cookie.setPath("/");      // Áp dụng cho toàn ứng dụng
-        cookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày, khớp TTL của refresh token
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60);
         response.addCookie(cookie);
     }
 
@@ -144,9 +144,7 @@ public class AuthenticateController {
                     .body(new ApiResponse<>(401, null, "No refresh token provided"));
         }
         try {
-            RefreshTokenDto refreshTokenDto = new RefreshTokenDto();
-            refreshTokenDto.setRefreshToken(refreshToken);
-            String newAccessToken = authenticateService.refreshAccessToken(refreshTokenDto);
+            String newAccessToken = authenticateService.refreshAccessToken(refreshToken);
             return ResponseEntity.ok(new ApiResponse<>(200, newAccessToken, "Token refreshed successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

@@ -23,7 +23,7 @@ public interface IAuthenticateService {
 
     String generateRefreshToken(UserEntity userEntity);
 
-    String refreshAccessToken(RefreshTokenDto refreshTokenDto) throws JOSEException;
+    String refreshAccessToken(String refreshToken) throws JOSEException;
 
 
     void revokeRefreshToken();

@@ -1,22 +1,28 @@
 package com.phithang.mysocialnetwork.service;
 
+import com.phithang.mysocialnetwork.dto.FriendshipDto;
+import com.phithang.mysocialnetwork.dto.request.FriendshipRequest;
+import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.entity.FriendshipEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface IFriendshipService {
-    FriendshipEntity save(UserEntity sender, UserEntity receiver);
+    FriendshipEntity save(FriendshipRequest request);
 
-    boolean accept(UserEntity sender, UserEntity receiver);
+
+    boolean acceptFriendRequest(FriendshipRequest friendshipDto);
 
     FriendshipEntity findBySenderAndReceiver(UserEntity sender, UserEntity receiver);
 
-    Boolean cancelRequest(FriendshipEntity friendshipEntity);
+
+    boolean cancelRequest(FriendshipRequest friendshipDto);
 
     FriendshipEntity findByUser1AndUser2(UserEntity sender, UserEntity receiver);
 
-    List<FriendshipEntity> findALlRequest();
+    List<FriendshipDto> findALlRequest();
 
-    List<FriendshipEntity> findAllFriends();
+    List<FriendshipDto> findAllFriends();
 }

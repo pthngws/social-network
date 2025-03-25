@@ -47,9 +47,6 @@ public class AuthenticateService implements IAuthenticateService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private OtpService otpService;
 
     @Autowired
@@ -86,13 +83,13 @@ public class AuthenticateService implements IAuthenticateService {
             throw new AppException(ErrorCode.EMAIL_INVALID);
         }
 
-        Optional<UserEntity> existingUser = Optional.ofNullable(userRepository.findByEmail(email));
+        Optional<UserEntity> existingUser = Optional.ofNullable(userService.findUserByEmail(email));
         UserEntity user = existingUser.orElseGet(() -> {
             UserEntity newUser = new UserEntity();
             newUser.setEmail(email);
             newUser.setFirstname(name != null ? name : "Unknown");
             newUser.setRole("USER");
-            return userRepository.save(newUser);
+            return userService.saveUser(newUser);
         });
         String accessToken = generateToken(user);
         String refreshToken = generateRefreshToken(user);
@@ -131,13 +128,13 @@ public class AuthenticateService implements IAuthenticateService {
     }
 
     @Override
-    public String refreshAccessToken(RefreshTokenDto refreshTokenDto) throws JOSEException {
-        String email = getEmailFromRefreshToken(refreshTokenDto.getRefreshToken());
+    public String refreshAccessToken(String refreshToken) throws JOSEException {
+        String email = getEmailFromRefreshToken(refreshToken);
         if (email == null) {
             throw new AppException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
-        UserEntity user = userRepository.findByEmail(email);
+        UserEntity user = userService.findUserByEmail(email);
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
@@ -152,6 +149,7 @@ public class AuthenticateService implements IAuthenticateService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         String email = authentication.getName();
+
         refreshTokenService.deleteRefreshToken(email);
     }
 
@@ -183,7 +181,7 @@ public class AuthenticateService implements IAuthenticateService {
     @Override
     public boolean saveUser(SignupRequest signupDto) {
         UserEntity userEntity = signupDto.toUserEntity();
-        if (userRepository.findByEmail(userEntity.getEmail()) != null) {
+        if (userService.findUserByEmail(userEntity.getEmail()) != null) {
             throw new AppException(ErrorCode.EMAIL_EXIST_REGISTER);
         }
         userEntity.setRole("CLIENT");
