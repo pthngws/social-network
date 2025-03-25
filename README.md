@@ -38,8 +38,8 @@ Các tính năng chính bao gồm:
 Clone repository về máy:
 
 ```bash
-git clone https://github.com/yourusername/simple-social-network.git
-cd simple-social-network
+git clone https://github.com/pthngws/social-network
+cd social-network
 ```
 
 Cài đặt các phụ thuộc bằng Maven:
