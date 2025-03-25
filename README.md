@@ -3,7 +3,7 @@
 Đây là một dự án đồ án phát triển một mạng xã hội đơn giản với các tính năng cơ bản như nhắn tin, kết bạn, bình luận và thích bài viết. Dự án được phát triển bằng **Spring Boot**.
 
 ## Demo
-[Xem video demo tại đây.](https://youtu.be/1__zr1dD3NA)
+[Xem video demo tại đây.](https://www.youtube.com/watch?v=nhSt6Y-bL48)
 
 ## Mục Lục
 
