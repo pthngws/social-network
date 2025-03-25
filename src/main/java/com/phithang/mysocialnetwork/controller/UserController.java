@@ -25,47 +25,18 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
-    @Autowired
-    private IFriendshipService friendshipService;
-
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<UpdateProfileRequest>>> searchUsers(@RequestParam("name") String name) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserEntity currentUser = userService.findUserByEmail(authentication.getName());
-
-        List<UserEntity> users = userService.findByFirstnameOrLastnameContaining(name);
-        List<UpdateProfileRequest> userDtos = new ArrayList<>();
-
-        for (UserEntity userEntity : users) {
-            if (!userEntity.getId().equals(currentUser.getId())) {
-                String friendStatus = getFriendStatus(userEntity, currentUser);
-
-                if (userEntity.getBirthday() == null)
-                    userEntity.setBirthday(new Date());
-
-                UpdateProfileRequest updateProfileRequest = new UpdateProfileRequest(userEntity);
-                updateProfileRequest.setFriendStatus(friendStatus);
-                userDtos.add(updateProfileRequest);
-            }
-        }
-
-        ApiResponse<List<UpdateProfileRequest>> apiResponse = new ApiResponse<>(200, userDtos, "Search users successful!");
+        ApiResponse<List<UpdateProfileRequest>> apiResponse = new ApiResponse<>(200, userService.findByFirstnameOrLastnameContaining(name), "Search users successful!");
         return ResponseEntity.ok(apiResponse);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UpdateProfileRequest>> getUserById(@PathVariable("id") Long id) {
-        UserEntity userEntity = userService.findById(id);
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserEntity currentUser = userService.findUserByEmail(authentication.getName());
+        UpdateProfileRequest userProfile = userService.getUserProfile(id);
 
-        if (userEntity != null) {
-            String friendStatus = getFriendStatus(userEntity, currentUser);
-
-            UpdateProfileRequest updateProfileRequest = new UpdateProfileRequest(userEntity);
-            updateProfileRequest.setFriendStatus(friendStatus);
-
-            ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(200, updateProfileRequest, "Get user successful!");
+        if (userProfile != null) {
+            ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(200, userProfile, "Get user successful!");
             return ResponseEntity.ok(apiResponse);
         }
         ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(404, null, "User not found!");
@@ -76,7 +47,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<UpdateProfileRequest>> getProfile() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         UserEntity userEntity = userService.findUserByEmail(authentication.getName());
-
         if (userEntity != null) {
             ApiResponse<UpdateProfileRequest> apiResponse = new ApiResponse<>(200, new UpdateProfileRequest(userEntity), "Get profile successful!");
             return ResponseEntity.ok(apiResponse);
@@ -98,18 +68,4 @@ public class UserController {
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-    // Helper method to get friend status
-    private String getFriendStatus(UserEntity userEntity, UserEntity currentUser) {
-        FriendshipEntity friendshipEntity = friendshipService.findBySenderAndReceiver(userEntity, currentUser);
-        String friendStatus = "NULL";
-        if (friendshipEntity != null) {
-            friendStatus = friendshipEntity.getStatus();
-            if (friendStatus.equals("PENDING")) {
-                if (friendshipEntity.getUser1().equals(userEntity)) {
-                    friendStatus = "SENT_BY_OTHER";
-                }
-            }
-        }
-        return friendStatus;
-    }
 }

@@ -4,9 +4,11 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.phithang.mysocialnetwork.dto.request.PasswordDto;
 import com.phithang.mysocialnetwork.dto.request.UpdateProfileRequest;
+import com.phithang.mysocialnetwork.entity.FriendshipEntity;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.exception.ErrorCode;
+import com.phithang.mysocialnetwork.repository.FriendshipRepository;
 import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +29,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FriendshipRepository friendshipRepository;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -117,9 +124,58 @@ public class UserService implements IUserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXIST));
     }
-
     @Override
-    public List<UserEntity> findByFirstnameOrLastnameContaining(String name) {
-        return userRepository.findByFirstnameOrLastnameContaining(name);
+    public UpdateProfileRequest getUserProfile(Long id) {
+        UserEntity userEntity = findById(id);
+        if (userEntity == null) {
+            return null;
+        }
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserEntity currentUser = findUserByEmail(authentication.getName());
+
+        String friendStatus = getFriendStatus(userEntity, currentUser);
+
+        UpdateProfileRequest updateProfileRequest = new UpdateProfileRequest(userEntity);
+        updateProfileRequest.setFriendStatus(friendStatus);
+
+        return updateProfileRequest;
+    }
+    @Override
+    public List<UpdateProfileRequest> findByFirstnameOrLastnameContaining(String name) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserEntity currentUser = userRepository.findByEmail(authentication.getName());
+
+        List<UserEntity> users = userRepository.findByFirstnameOrLastnameContaining(name);
+        List<UpdateProfileRequest> userDtos = new ArrayList<>();
+
+        for (UserEntity userEntity : users) {
+            if (!userEntity.getId().equals(currentUser.getId())) {
+                String friendStatus = getFriendStatus(userEntity, currentUser);
+
+                if (userEntity.getBirthday() == null)
+                    userEntity.setBirthday(new Date());
+
+                UpdateProfileRequest updateProfileRequest = new UpdateProfileRequest(userEntity);
+                updateProfileRequest.setFriendStatus(friendStatus);
+                userDtos.add(updateProfileRequest);
+            }
+        }
+        return userDtos;
+    }
+
+    // Helper method to get friend status
+    private String getFriendStatus(UserEntity userEntity, UserEntity currentUser) {
+        FriendshipEntity friendshipEntity = friendshipRepository.findBySenderAndReceiver(userEntity, currentUser);
+        String friendStatus = "NULL";
+        if (friendshipEntity != null) {
+            friendStatus = friendshipEntity.getStatus();
+            if (friendStatus.equals("PENDING")) {
+                if (friendshipEntity.getUser1().equals(userEntity)) {
+                    friendStatus = "SENT_BY_OTHER";
+                }
+            }
+        }
+        return friendStatus;
     }
 }

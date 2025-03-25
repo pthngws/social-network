@@ -8,8 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface IUserService {
-    public List<UserEntity> findAllUsers();
-    public UserEntity findUserByEmail(String email);
+    List<UserEntity> findAllUsers();
+    UserEntity findUserByEmail(String email);
 
     UserEntity saveUser(UserEntity user);
 
@@ -20,5 +20,7 @@ public interface IUserService {
 
     UserEntity findById(Long id);
 
-    List<UserEntity> findByFirstnameOrLastnameContaining(String name);
+    UpdateProfileRequest getUserProfile(Long id);
+
+    List<UpdateProfileRequest> findByFirstnameOrLastnameContaining(String name);
 }
