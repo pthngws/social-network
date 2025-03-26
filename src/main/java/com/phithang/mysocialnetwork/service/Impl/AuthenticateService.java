@@ -88,7 +88,11 @@ public class AuthenticateService implements IAuthenticateService {
             UserEntity newUser = new UserEntity();
             newUser.setEmail(email);
             newUser.setFirstname(name != null ? name : "Unknown");
-            newUser.setRole("USER");
+            newUser.setRole("CLIENT");
+            newUser.setFirstname("Người dùng");
+            newUser.setLastname("mới");
+            newUser.setBirthday(new Date());
+            newUser.setImageUrl("https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg");
             return userService.saveUser(newUser);
         });
         String accessToken = generateToken(user);
