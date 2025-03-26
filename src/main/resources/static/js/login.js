@@ -6,7 +6,7 @@ $(document).ready(function () {
 
     // Xử lý nút đăng nhập Google
     $("#googleLoginBtn").click(function () {
-        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+        window.location.href = "/oauth2/authorization/google";
     });
 
     // Xử lý callback OAuth2
