@@ -70,7 +70,7 @@ public class PostService implements IPostService {
         PostEntity postEntity = new PostEntity();
         postEntity.setContent(content);
         postEntity.setAuthor(author);
-        postEntity.setTimestamp(LocalDateTime.now());
+        postEntity.setTimestamp(java.time.LocalDateTime.now());
         postRepository.save(postEntity);
 
         // Xử lý media

@@ -48,7 +48,7 @@ public class FriendshipService implements IFriendshipService {
         friendshipEntity.setUser1(sender);
         friendshipEntity.setUser2(receiver);
         friendshipEntity.setStatus("PENDING");
-        friendshipEntity.setRequestTimestamp(LocalDateTime.now());
+        friendshipEntity.setRequestTimestamp(java.time.LocalDateTime.now());
 
         try {
             notificationService.createAndSendNotification(
@@ -77,7 +77,7 @@ public class FriendshipService implements IFriendshipService {
         }
 
         friendshipEntity.setStatus("ACCEPTED");
-        friendshipEntity.setRequestTimestamp(LocalDateTime.now());
+        friendshipEntity.setRequestTimestamp(java.time.LocalDateTime.now());
 
         try {
             notificationService.createAndSendNotification(
