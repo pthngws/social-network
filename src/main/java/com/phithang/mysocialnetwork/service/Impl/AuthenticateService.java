@@ -187,6 +187,10 @@ public class AuthenticateService implements IAuthenticateService {
         userEntity.setRole("CLIENT");
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity.setActive(false);
+        userEntity.setFirstname("Người dùng");
+        userEntity.setLastname("mới");
+        userEntity.setBirthday(new Date());
+        userEntity.setImageUrl("https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg");
         userService.saveUser(userEntity);
         return true;
     }
