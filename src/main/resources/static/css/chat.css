@@ -3,7 +3,7 @@
     position: fixed;
     bottom: 20px; /* Cùng độ cao với nút */
     right: 90px; /* Khoảng cách từ nút đến popup */
-    width: 350px; /* Độ rộng của popup */
+    width: 350px; /* Độ rộng mặc định cho desktop */
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -11,34 +11,34 @@
     font-family: Arial, sans-serif;
     z-index: 1000;
 }
+
 .chat-btn {
-    position: fixed; /* Giữ cố định vị trí */
-    bottom: 20px;    /* Cách đáy 20px */
-    right: 20px;     /* Cách phải 20px */
-    z-index: 1000;   /* Hiển thị phía trên các thành phần khác */
-    width: 60px;     /* Chiều rộng của nút */
-    height: 60px;    /* Chiều cao của nút */
-    border-radius: 50%; /* Tạo hình tròn */
-    font-size: 24px;  /* Kích thước chữ lớn hơn */
-    background-color: #007bff !important; /* Màu nền xanh của nút */
-    color: white !important;    /* Màu chữ trắng */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 24px;
+    background-color: #007bff !important;
+    color: white !important;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;    /* Xóa viền */
-    outline: none;   /* Xóa outline khi nhấn */
+    border: none;
+    outline: none;
 }
 
 .chat-btn:hover {
     background-color: #033365;
-    color: white;/* Màu nền khi hover */
+    color: white;
 }
 
 .chat-btn i {
-    font-size: 30px; /* Kích thước icon */
+    font-size: 30px;
 }
-
 
 /* Header with Close Button */
 #chat-popup-header {
@@ -75,11 +75,11 @@
 }
 
 .sender {
-    justify-content: flex-end; /* Align sender's message to the right */
+    justify-content: flex-end;
 }
 
 .receiver {
-    justify-content: flex-start; /* Align receiver's message to the left */
+    justify-content: flex-start;
 }
 
 .sender .message-bubble {
@@ -91,14 +91,13 @@
 }
 
 .message-bubble {
-    word-wrap: break-word; /* Tự động xuống dòng khi gặp từ dài */
-    word-break: break-word; /* Tự động ngắt từ khi không đủ chỗ */
-    max-width: 70%; /* Giới hạn chiều rộng của khung tin nhắn */
-    background-color: #f1f1f1; /* Màu nền (tuỳ chỉnh theo ý thích) */
-    padding: 10px; /* Khoảng cách giữa nội dung và viền */
-    border-radius: 10px; /* Bo góc */
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 70%;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 10px;
 }
-
 
 .receiver .message-bubble {
     background-color: white;
@@ -113,7 +112,8 @@
     color: black;
     margin-top: 3px;
 }
-.date-separator{
+
+.date-separator {
     text-align: center;
 }
 
@@ -139,50 +139,116 @@
     border-radius: 50%;
     padding: 10px 12px;
 }
+
 .input-group-append button:hover {
     background-color: #005bb5;
 }
+
 #friend-list-items {
-    list-style: none; /* Xóa dấu chấm đầu dòng */
+    list-style: none;
     margin: 0;
     padding: 0;
-    max-height: 300px; /* Giới hạn chiều cao */
-    overflow-y: auto; /* Thêm thanh cuộn khi vượt quá chiều cao */
-    border: 1px solid #ddd; /* Đường viền */
-    border-radius: 5px; /* Góc bo tròn */
-    background-color: #f9f9f9; /* Màu nền */
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
 }
 
 #friend-list-items li {
-    padding: 10px 15px; /* Khoảng cách trong */
-    border-bottom: 1px solid #eee; /* Đường kẻ dưới */
-    cursor: pointer; /* Con trỏ chuột thay đổi */
-    font-size: 16px; /* Cỡ chữ */
-    transition: background-color 0.3s ease; /* Hiệu ứng hover mượt mà */
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
 }
 
 #friend-list-items li:hover {
-    background-color: #e0f7fa; /* Màu nền khi hover */
+    background-color: #e0f7fa;
 }
 
 #friend-list-items li:last-child {
-    border-bottom: none; /* Xóa đường kẻ dưới cùng */
+    border-bottom: none;
 }
 
 #friend-list-items::-webkit-scrollbar {
-    width: 6px; /* Độ rộng thanh cuộn */
+    width: 6px;
 }
 
 #friend-list-items::-webkit-scrollbar-thumb {
-    background-color: #bbb; /* Màu thanh cuộn */
-    border-radius: 10px; /* Góc bo thanh cuộn */
+    background-color: #bbb;
+    border-radius: 10px;
 }
 
 #friend-list-items::-webkit-scrollbar-thumb:hover {
-    background-color: #999; /* Màu thanh cuộn khi hover */
+    background-color: #999;
 }
 
 #friend-list-items::-webkit-scrollbar-track {
-    background-color: #f1f1f1; /* Màu nền thanh cuộn */
+    background-color: #f1f1f1;
     border-radius: 10px;
+}
+
+/* Responsive adjustments cho mobile */
+@media (max-width: 768px) {
+    #chat-popup {
+        width: 90%; /* Chiếm 90% chiều rộng màn hình */
+        max-width: 300px; /* Giới hạn tối đa để không quá lớn */
+        right: 10px; /* Giảm khoảng cách từ cạnh phải */
+        bottom: 70px; /* Đẩy lên trên nút chat */
+        height: 70vh; /* Giới hạn chiều cao tối đa */
+        max-height: 400px; /* Đảm bảo không vượt quá màn hình */
+    }
+
+    #chat-box {
+        height: 60%; /* Giảm chiều cao chat box để vừa màn hình */
+        max-height: 250px; /* Giới hạn tối đa */
+    }
+
+    #friend-list-items {
+        max-height: 200px; /* Giảm chiều cao danh sách bạn bè */
+    }
+
+    #message-input {
+        font-size: 14px; /* Giảm kích thước chữ để vừa khung */
+        padding: 6px 10px; /* Giảm padding */
+    }
+
+    .input-group-append button {
+        padding: 8px 10px; /* Giảm kích thước nút gửi */
+        font-size: 20px; /* Giảm kích thước icon */
+    }
+
+    .chat-btn {
+        width: 50px; /* Giảm kích thước nút chat */
+        height: 50px;
+        font-size: 20px; /* Giảm kích thước icon */
+    }
+
+    .chat-btn i {
+        font-size: 24px; /* Giảm kích thước icon */
+    }
+
+    #chat-popup-header {
+        padding: 10px; /* Giảm padding header */
+        font-size: 0.9em; /* Giảm kích thước chữ */
+    }
+}
+
+@media (max-width: 576px) {
+    #chat-popup {
+        width: 85%; /* Giảm thêm để vừa màn hình nhỏ hơn */
+        max-width: 280px;
+        bottom: 60px;
+        height: 65vh; /* Giảm chiều cao thêm */
+        max-height: 350px;
+    }
+
+    #chat-box {
+        max-height: 200px; /* Giảm chiều cao chat box */
+    }
+
+    #friend-list-items {
+        max-height: 150px; /* Giảm chiều cao danh sách bạn bè */
+    }
 }

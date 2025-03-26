@@ -55,7 +55,7 @@
         </style>
     </head>
     <body>
-    <div class="container mt-4" style="width: 40%">
+    <div class="container mt-4 custom-container" style="width: 40%">
         <div id="results" class="row"></div>
     </div>
     <script>
@@ -66,7 +66,7 @@
 
             if (token) {
                 // Gửi request tới API với token
-                fetch("http://localhost:8080/user/profile", {
+                fetch("/user/profile", {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`,  // Thêm token vào header
@@ -103,7 +103,7 @@
             }
             if (name) {
                 $.ajax({
-                    url: 'http://localhost:8080/user/search',
+                    url: '/user/search',
                     method: 'GET',
                     data: { name: name },
                     headers: {
@@ -119,7 +119,7 @@
                                                 <div class="user-info">
                                                     <img src="${user.avatar}" alt="${user.firstName} ${user.lastName}" class="me-3">
                                                     <div>
-                                                        <a href="http://localhost:8080/${user.id}" style="text-decoration: none; color: black; font-weight: bold;">
+                                                        <a href="/${user.id}" style="text-decoration: none; color: black; font-weight: bold;">
                                                             ${user.firstName} ${user.lastName}
                                                         </a>
                                                         <p class="text-muted">${user.about || 'Không có thông tin.'}</p>
@@ -192,7 +192,7 @@
 
             function acceptFriendRequest(userId) {
                 const token = localStorage.getItem('token');
-                fetch("http://localhost:8080/friendship/accept", {
+                fetch("/friendship/accept", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -213,7 +213,7 @@
 
             function sendFriendRequest(userId) {
                 const token = localStorage.getItem('token');
-                fetch("http://localhost:8080/friendship/add", {
+                fetch("/friendship/add", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -234,7 +234,7 @@
 
             function cancelFriendRequest(userId) {
                 const token = localStorage.getItem('token');
-                fetch("http://localhost:8080/friendship/cancel", {
+                fetch("/friendship/cancel", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,

@@ -190,3 +190,16 @@ header {
   justify-content: center;
   cursor: pointer;
 }
+
+.custom-container {
+  width: 40%; /* Mặc định cho desktop */
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+@media (max-width: 768px) {
+  .custom-container {
+    width: 100%; /* Xóa width 40% và đặt full width trên mobile */
+  }
+}
