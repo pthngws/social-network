@@ -45,7 +45,7 @@ public class MessageService implements IMessageService {
         if (sender == null || receiver == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        chatEntity.setTimestamp(LocalDateTime.now());
+        chatEntity.setTimestamp(java.time.LocalDateTime.now());
         MessageEntity messageEntity = new MessageEntity();
         messageEntity.setContent(chatEntity.getContent());
         messageEntity.setReceiver(receiver);

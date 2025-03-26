@@ -304,7 +304,7 @@ public class PostService implements IPostService {
         CommentEntity commentEntity = new CommentEntity();
         commentEntity.setPost(postEntity);
         commentEntity.setAuthor(userEntity);
-        commentEntity.setTimestamp(LocalDateTime.now());
+        commentEntity.setTimestamp(java.time.LocalDateTime.now());
         commentEntity.setContent(commentDto.getContent());
 
         if (commentDto.getParentCommentId() != null) {

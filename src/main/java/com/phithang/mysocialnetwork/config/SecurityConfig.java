@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -68,11 +69,17 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(new CustomOAuth2UserService())
                         )
-                        .defaultSuccessUrl("/login?oauth2=success", true) // Redirect về /login với param
-                        .failureUrl("/login?error=true")
+                        .successHandler((request, response, authentication) -> {
+                            response.sendRedirect("/login?oauth2=success");
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            response.sendRedirect("/login?error=true");
+                        })
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();

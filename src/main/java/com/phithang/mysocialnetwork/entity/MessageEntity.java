@@ -30,6 +30,6 @@ public class MessageEntity {
     private String content;
 
     @Column(nullable = false)
-    private LocalDateTime timestamp;
+    private java.time.LocalDateTime timestamp;
 
 }
