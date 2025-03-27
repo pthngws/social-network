@@ -2,7 +2,7 @@ name: Keep Render App Alive
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Chạy mỗi 5 phút
+    - cron: '*/1 * * * *'  # Chạy mỗi 5 phút
 
 jobs:
   keep_alive:
