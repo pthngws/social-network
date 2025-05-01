@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface INotificationService {
 
+    void markAllAsRead();
+
     List<NotifyResponse> getNotification();
 }

@@ -19,6 +19,13 @@ public class NotifyController {
     @Autowired
     private INotificationService notificationService;
 
+
+    @GetMapping("/read-all")
+    public ResponseEntity<ApiResponse<String>> markAllAsRead() {
+        notificationService.markAllAsRead();
+        return ResponseEntity.ok(new ApiResponse<>(200, null, "All notifications marked as read"));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<NotifyResponse>>> getNotifications() {
         List<NotifyResponse> notifications = notificationService.getNotification();

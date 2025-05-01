@@ -52,10 +52,10 @@ public class MessageService implements IMessageService {
         messageEntity.setSender(sender);
         messageEntity.setTimestamp(chatEntity.getTimestamp());
         try {
-            notificationService.createAndSendNotification(
-                    receiver,
-                    sender.getFirstname() + " " + sender.getLastname() + " đã gửi tin nhắn.", null
-            );
+//            notificationService.createAndSendNotification(
+//                    receiver,
+//                    sender.getFirstname() + " " + sender.getLastname() + " đã gửi tin nhắn.", null
+//            );
             return chatRepository.save(messageEntity);
         } catch (Exception e) {
             throw new AppException(ErrorCode.MESSAGE_CREATION_FAILED);

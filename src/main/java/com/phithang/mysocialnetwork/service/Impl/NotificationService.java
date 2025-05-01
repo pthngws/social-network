@@ -30,6 +30,26 @@ public class NotificationService implements INotificationService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Override
+    public void markAllAsRead() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXIST);
+        }
+
+        List<NotificationEntity> notifications = notificationRepository.findAllByUser(user);
+
+        notifications.forEach(notification -> notification.setIsread(1));
+
+        notificationRepository.saveAll(notifications);
+    }
+
+
+    @Override
     public List<NotifyResponse> getNotification() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if (email == null) {
