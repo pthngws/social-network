@@ -42,6 +42,7 @@ public class SecurityConfig {
             "/auth/login",
             "/auth/introspect",
             "/auth/logout",
+            "/auth/refresh-token",
             "/**",
             "/home",
             "/search/**",
@@ -70,10 +71,10 @@ public class SecurityConfig {
                                 .userService(new CustomOAuth2UserService())
                         )
                         .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("/login?oauth2=success");
+                            response.sendRedirect("http://localhost:5173/login?oauth2=success");
                         })
                         .failureHandler((request, response, exception) -> {
-                            response.sendRedirect("/login?error=true");
+                            response.sendRedirect("http://localhost:5173/login?error=true");
                         })
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -88,7 +89,7 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173","http://localhost:8080")); // không có /register nhé
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
@@ -98,6 +99,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {

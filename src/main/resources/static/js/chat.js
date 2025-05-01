@@ -10,9 +10,9 @@ function toggleChatPopup() {
     chatPopup.css("display", chatPopup.css("display") === "block" ? "none" : "block");
     if (chatPopup.css("display") === "block")
         $("#page-title").text("Tin Nhắn");
-        loadFriendList();
-        $("#friend-list").show();
-        $("#chat-room").hide();
+    loadFriendList();
+    $("#friend-list").show();
+    $("#chat-room").hide();
 }
 
 async function loadFriendList() {
