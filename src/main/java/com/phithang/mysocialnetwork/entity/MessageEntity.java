@@ -32,4 +32,7 @@ public class MessageEntity {
     @Column(nullable = false)
     private java.time.LocalDateTime timestamp;
 
+
+    @Column(nullable = false)
+    private boolean isRead = false;
 }
