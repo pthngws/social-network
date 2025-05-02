@@ -11,7 +11,6 @@ import com.phithang.mysocialnetwork.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,9 @@ public class MessageService implements IMessageService {
     private IUserService userService;
 
     @Autowired
+    private OnlineStatusService onlineStatusService;
+
+    @Autowired
     private NotificationService notificationService;
 
     @Override
@@ -35,7 +37,16 @@ public class MessageService implements IMessageService {
         if (receiver == null) {
             throw new AppException(ErrorCode.USER_NOT_EXIST);
         }
-        return chatRepository.findDistinctParticipantsByUserId(receiverId);
+        List<Map<String, Object>> participants = chatRepository.findDistinctParticipantsByUserId(receiverId);
+        return participants.stream().map(participant -> {
+            Map<String, Object> enrichedParticipant = new HashMap<>(participant);
+            Long userId = ((Number) participant.get("userID")).longValue();
+            boolean isOnline = onlineStatusService.isUserOnline(userId);
+            Long minutesAgo = onlineStatusService.getLastSeenMinutesAgo(userId);
+            enrichedParticipant.put("isOnline", isOnline);
+            enrichedParticipant.put("minutesAgo", minutesAgo);
+            return enrichedParticipant;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -52,10 +63,10 @@ public class MessageService implements IMessageService {
         messageEntity.setSender(sender);
         messageEntity.setTimestamp(chatEntity.getTimestamp());
         try {
-//            notificationService.createAndSendNotification(
-//                    receiver,
-//                    sender.getFirstname() + " " + sender.getLastname() + " đã gửi tin nhắn.", null
-//            );
+            // notificationService.createAndSendNotification(
+            //         receiver,
+            //         sender.getFirstName() + " " + sender.getLastName() + " đã gửi tin nhắn.", null
+            // );
             return chatRepository.save(messageEntity);
         } catch (Exception e) {
             throw new AppException(ErrorCode.MESSAGE_CREATION_FAILED);
