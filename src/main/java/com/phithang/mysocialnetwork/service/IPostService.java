@@ -21,7 +21,9 @@ public interface IPostService {
 
     boolean deletePost(Long id);
 
-    boolean likePost(Long id);
+
+    @Transactional
+    boolean reactPost(Long id, String reactionType);
 
     boolean commentPost(Long id, CommentDto commentDto);
 

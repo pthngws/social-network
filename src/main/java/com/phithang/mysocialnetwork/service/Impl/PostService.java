@@ -10,7 +10,6 @@ import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.exception.ErrorCode;
 import com.phithang.mysocialnetwork.repository.*;
 import com.phithang.mysocialnetwork.service.IPostService;
-import com.phithang.mysocialnetwork.service.IReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,6 +49,9 @@ public class PostService implements IPostService {
 
     @Autowired
     private ReportRepository reportRepository;
+
+    @Autowired
+    private PostReactionRepository postReactionRepository;
 
     @Autowired
     private Cloudinary cloudinary;
@@ -199,7 +200,6 @@ public class PostService implements IPostService {
         return postRepository.save(postEntity);
     }
 
-
     @Transactional
     @Override
     public boolean deletePost(Long id) {
@@ -247,9 +247,9 @@ public class PostService implements IPostService {
                 }
             }
 
-            // 3. Xóa các lượt thích (bản ghi trong bảng post_likes)
-            postEntity.getLikedBy().clear(); // Xóa quan hệ ManyToMany
-            postRepository.save(postEntity); // Cập nhật bảng post_likes trước khi xóa bài viết
+            // 3. Xóa các phản ứng (bản ghi trong bảng post_reactions)
+            postEntity.getReactions().clear(); // Xóa quan hệ OneToMany
+            postRepository.save(postEntity); // Cập nhật bảng post_reactions trước khi xóa bài viết
 
             // 4. Xóa bài viết
             postRepository.delete(postEntity);
@@ -260,9 +260,9 @@ public class PostService implements IPostService {
         }
     }
 
-
+    @Transactional
     @Override
-    public boolean likePost(Long id) {
+    public boolean reactPost(Long id, String reactionType) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity userEntity = userService.findUserByEmail(email);
         if (userEntity == null) {
@@ -271,18 +271,42 @@ public class PostService implements IPostService {
         PostEntity postEntity = postRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
-        if (!postEntity.getLikedBy().contains(userEntity)) {
-            postEntity.getLikedBy().add(userEntity);
+        // Danh sách các biểu cảm hợp lệ
+        List<String> validReactions = Arrays.asList("LIKE", "LOVE", "HAHA", "WOW", "SAD", "ANGRY");
+        if (!validReactions.contains(reactionType.toUpperCase())) {
+            throw new AppException(ErrorCode.INVALID_REACTION_TYPE);
+        }
+
+        Optional<PostReactionEntity> existingReaction = postReactionRepository.findByPostAndUser(postEntity, userEntity);
+
+        if (existingReaction.isPresent()) {
+            PostReactionEntity reaction = existingReaction.get();
+            if (reaction.getReactionType().equals(reactionType.toUpperCase())) {
+                // Nếu cùng loại biểu cảm, xóa biểu cảm
+                postReactionRepository.delete(reaction);
+            } else {
+                // Nếu khác loại, cập nhật loại biểu cảm
+                reaction.setReactionType(reactionType.toUpperCase());
+                postReactionRepository.save(reaction);
+            }
+        } else {
+            // Tạo mới biểu cảm
+            PostReactionEntity newReaction = new PostReactionEntity();
+            newReaction.setPost(postEntity);
+            newReaction.setUser(userEntity);
+            newReaction.setReactionType(reactionType.toUpperCase());
+            postReactionRepository.save(newReaction);
+            postEntity.getReactions().add(newReaction);
+
             if (!email.equals(postEntity.getAuthor().getEmail())) {
                 notificationService.createAndSendNotification(
                         postEntity.getAuthor(),
-                        userEntity.getFirstname() + " " + userEntity.getLastname() + " đã thích bài viết của bạn.",
+                        userEntity.getFirstname() + " " + userEntity.getLastname() + " đã " + reactionType.toLowerCase() + " bài viết của bạn.",
                         postEntity
                 );
             }
-        } else {
-            postEntity.getLikedBy().remove(userEntity);
         }
+
         try {
             postRepository.save(postEntity);
             return true;
@@ -346,10 +370,11 @@ public class PostService implements IPostService {
 
         return convertToPostDtos(postRepository.findAllByAuthor(user), email);
     }
+
     @Override
     public List<PostDto> getAllPostDtos() {
-            return convertToPostDtos(postRepository.findAll(), getCurrentUserEmail());
-        }
+        return convertToPostDtos(postRepository.findAll(), getCurrentUserEmail());
+    }
 
     private List<PostDto> convertToPostDtos(List<PostEntity> posts, String currentUserEmail) {
         return posts.stream()
@@ -357,6 +382,7 @@ public class PostService implements IPostService {
                 .sorted(Comparator.comparing(PostDto::getTimestamp).reversed())
                 .collect(Collectors.toList());
     }
+
     @Override
     public List<PostDto> getUserPostsDto(Long userId) {
         UserEntity user = userService.findById(userId);
@@ -376,6 +402,7 @@ public class PostService implements IPostService {
         return postRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
     }
+
     private String getCurrentUserEmail() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
@@ -383,12 +410,25 @@ public class PostService implements IPostService {
     private PostDto buildPostDto(PostEntity postEntity, String currentUserEmail) {
         PostDto postDto = new PostDto().toPostDto(postEntity);
 
-        boolean isLiked = Optional.ofNullable(postEntity.getLikedBy())
+        // Kiểm tra xem người dùng hiện tại đã phản ứng chưa và loại phản ứng
+        Optional<PostReactionEntity> userReaction = Optional.ofNullable(postEntity.getReactions())
                 .orElse(new ArrayList<>())
                 .stream()
-                .anyMatch(user -> user.getEmail().equals(currentUserEmail));
+                .filter(reaction -> reaction.getUser().getEmail().equals(currentUserEmail))
+                .findFirst();
 
-        postDto.setLiked(isLiked);
+        postDto.setReactionType(userReaction.map(PostReactionEntity::getReactionType).orElse(null));
+
+        // Đếm số lượng từng loại phản ứng
+        Map<String, Long> reactionCounts = Optional.ofNullable(postEntity.getReactions())
+                .orElse(new ArrayList<>())
+                .stream()
+                .collect(Collectors.groupingBy(
+                        PostReactionEntity::getReactionType,
+                        Collectors.counting()
+                ));
+        postDto.setReactionCounts(reactionCounts);
+
         return postDto;
     }
 }

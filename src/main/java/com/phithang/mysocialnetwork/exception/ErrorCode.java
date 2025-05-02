@@ -53,7 +53,7 @@ public enum ErrorCode {
     POST_MEDIA_LIMIT_EXCEEDED(1804, "Số lượng media trong bài viết vượt quá giới hạn", HttpStatus.BAD_REQUEST),
     POST_MEDIA_NOT_FOUND(1805, "Không tìm thấy media của bài viết", HttpStatus.NOT_FOUND),
     POST_VISIBILITY_UNAUTHORIZED(1806, "Bạn không có quyền xem bài viết này", HttpStatus.FORBIDDEN),
-
+    INVALID_REACTION_TYPE(1807, "Invalid reaction type",HttpStatus.BAD_REQUEST),
     // Comment-Related Errors (1900 series)
     COMMENT_NOT_FOUND(1900, "Không tìm thấy bình luận", HttpStatus.NOT_FOUND),
     COMMENT_CREATION_FAILED(1901, "Tạo bình luận thất bại", HttpStatus.INTERNAL_SERVER_ERROR),

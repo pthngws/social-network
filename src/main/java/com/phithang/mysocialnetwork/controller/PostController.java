@@ -61,7 +61,7 @@ public class PostController {
             @RequestPart(value = "media", required = false) List<MultipartFile> mediaFiles) throws IOException {
 
         try {
-            PostEntity postEntity = postService.createPost(content, mediaFiles); // Chỉ gọi service
+            PostEntity postEntity = postService.createPost(content, mediaFiles);
             return ResponseEntity.ok(new ApiResponse<>(200, postEntity, "Post created successfully!"));
         } catch (AppException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -71,7 +71,6 @@ public class PostController {
                     .body(new ApiResponse<>(500, null, "Lỗi hệ thống: " + e.getMessage()));
         }
     }
-
 
     @PutMapping(value = "/post/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<PostEntity>> update(
@@ -92,7 +91,6 @@ public class PostController {
         }
     }
 
-
     @DeleteMapping("/post/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         if (postService.deletePost(id)) {
@@ -101,12 +99,12 @@ public class PostController {
         return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Post deletion failed!"));
     }
 
-    @PostMapping("/like/{id}")
-    public ResponseEntity<ApiResponse<Void>> like(@PathVariable Long id) {
-        if (postService.likePost(id)) {
-            return ResponseEntity.ok(new ApiResponse<>(200, null, "Like successful!"));
+    @PostMapping("/react/{id}")
+    public ResponseEntity<ApiResponse<Void>> react(@PathVariable Long id, @RequestParam String reactionType) {
+        if (postService.reactPost(id, reactionType)) {
+            return ResponseEntity.ok(new ApiResponse<>(200, null, "React successful!"));
         }
-        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "Like failed!"));
+        return ResponseEntity.badRequest().body(new ApiResponse<>(400, null, "React failed!"));
     }
 
     @PostMapping("/comment/{postId}")

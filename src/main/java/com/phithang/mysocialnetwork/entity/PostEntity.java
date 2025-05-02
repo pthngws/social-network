@@ -1,6 +1,5 @@
 package com.phithang.mysocialnetwork.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -31,17 +30,11 @@ public class PostEntity {
     @JsonIgnore
     private List<PostMediaEntity> postMedia;
 
-    @ManyToMany
-    @JoinTable(
-            name = "post_likes",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<UserEntity> likedBy;
+    private List<PostReactionEntity> reactions;
 
     private java.time.LocalDateTime timestamp;
-
 
     @Override
     public String toString() {
@@ -50,9 +43,8 @@ public class PostEntity {
                 ", content='" + content + '\'' +
                 ", authorId=" + author.getId() +
                 ", commentCount=" + (comments != null ? comments.size() : 0) +
-                ", likedByCount=" + (likedBy != null ? likedBy.size() : 0) +
+                ", reactionCount=" + (reactions != null ? reactions.size() : 0) +
                 ", timestamp=" + timestamp +
                 '}';
     }
-
 }
