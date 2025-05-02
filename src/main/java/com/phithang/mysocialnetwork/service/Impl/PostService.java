@@ -322,6 +322,13 @@ public class PostService implements IPostService {
                         userEntity.getFirstname() + " " + userEntity.getLastname() + " đã bình luận bài viết của bạn.",
                         postEntity
                 );
+
+            }
+            if(commentEntity.getParentComment() != null) {
+                notificationService.createAndSendNotification(
+                        commentEntity.getParentComment().getAuthor(),
+                        userEntity.getFirstname() + " " + userEntity.getLastname() + " đã trả lời bình luận của bạn.",
+                        postEntity);
             }
             return true;
         } catch (Exception e) {
