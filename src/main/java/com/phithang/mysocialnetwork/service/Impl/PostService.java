@@ -272,7 +272,7 @@ public class PostService implements IPostService {
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         // Danh sách các biểu cảm hợp lệ
-        List<String> validReactions = Arrays.asList("LIKE", "LOVE", "HAHA", "WOW", "SAD", "ANGRY");
+        List<String> validReactions = Arrays.asList("LIKE", "LOVE","CARE", "HAHA", "WOW", "SAD", "ANGRY");
         if (!validReactions.contains(reactionType.toUpperCase())) {
             throw new AppException(ErrorCode.INVALID_REACTION_TYPE);
         }
