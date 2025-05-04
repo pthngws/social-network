@@ -85,6 +85,8 @@ public class StoryService implements IStoryService {
         Story story = new Story();
         story.setUserId(userId);
         story.setContent(mediaUrl);
+        story.setMusicStart(request.getMusicStart());
+        story.setMusicDuration(request.getMusicDuration());
         story.setPostedAt(LocalDateTime.now());
         story.setExpiresAt(LocalDateTime.now().plusHours(24));
 
@@ -223,6 +225,8 @@ public class StoryService implements IStoryService {
         dto.setId(story.getId());
         dto.setUserId(story.getUserId());
         dto.setFullName(user.getFirstname() + " " + user.getLastname());
+        dto.setMusicStart(story.getMusicStart());
+        dto.setMusicDuration(story.getMusicDuration());
         dto.setAvatar(user.getImageUrl());
         dto.setContent(story.getContent());
         dto.setMusicUrl(story.getMusic().getUrl());

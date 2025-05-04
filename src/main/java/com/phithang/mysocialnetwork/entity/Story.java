@@ -20,6 +20,12 @@ public class Story {
     @Column
     private String content; // Nội dung story (văn bản, URL ảnh/video)
 
+    @Column(name = "music_start")
+    private Integer musicStart; // giây bắt đầu đoạn nhạc (ví dụ: 10 nghĩa là bắt đầu từ giây thứ 10)
+
+    @Column(name = "music_duration")
+    private Integer musicDuration; // độ dài đoạn nhạc (ví dụ: 20 nghĩa là phát 20 giây)
+
     @ManyToOne
     @JoinColumn(name = "music_id", nullable = true)
     private Music music; // Nhạc gắn với story (có thể null)

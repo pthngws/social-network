@@ -12,6 +12,8 @@ public class StoryResponseDto {
     private String avatar;
     private String content;
     private String musicUrl;
+    private Integer musicStart;
+    private Integer musicDuration;
     private LocalDateTime postedAt;
     private LocalDateTime expiresAt;
 }

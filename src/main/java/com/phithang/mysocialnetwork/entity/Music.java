@@ -23,6 +23,8 @@ public class Music {
     @Column
     private String artist;
 
+
+
     @Column
     private String thumbnail; // URL của ảnh thumbnail
 
