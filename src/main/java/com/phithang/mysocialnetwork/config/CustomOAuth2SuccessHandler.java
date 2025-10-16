@@ -1,9 +1,7 @@
 package com.phithang.mysocialnetwork.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.phithang.mysocialnetwork.dto.UserDto;
-import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,8 +24,6 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
@@ -71,12 +67,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);   // Set false để hỗ trợ localhost HTTP
+        cookie.setSecure(true);   // Set true cho HTTPS production
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60);
         // Thêm SameSite=None để hỗ trợ cross-origin
         response.addHeader("Set-Cookie", 
-            String.format("refreshToken=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=None; Secure=false", 
+            String.format("refreshToken=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=None; Secure=true", 
                 refreshToken, 7 * 24 * 60 * 60));
     }
 }

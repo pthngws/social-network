@@ -91,6 +91,8 @@ public class SecurityConfig {
                 "http://localhost:*",
                 "https://localhost:*",
                 "https://*.onrender.com",
+                "https://wsnetwork.vercel.app",
+                "https://*.vercel.app",
                 "https://accounts.google.com",
                 "https://www.googleapis.com"
         ));
