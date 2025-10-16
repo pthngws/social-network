@@ -1,6 +1,7 @@
 package com.phithang.mysocialnetwork.config;
 
 import com.phithang.mysocialnetwork.service.Impl.CustomOAuth2UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,9 @@ public class SecurityConfig {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @Autowired
+    private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+
     @Bean
     JwtDecoder jwtDecoder() {
         SecretKeySpec secretKey = new SecretKeySpec(jwtSecret.getBytes(), "HS512");
@@ -66,9 +70,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(new CustomOAuth2UserService())
                         )
-                        .successHandler((request, response, authentication) -> {
-                            response.sendRedirect(frontendUrl + "/login?oauth2=success");
-                        })
+                        .successHandler(customOAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             response.sendRedirect(frontendUrl + "/login?error=true");
                         })
