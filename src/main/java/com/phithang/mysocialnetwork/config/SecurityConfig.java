@@ -39,19 +39,10 @@ public class SecurityConfig {
     }
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login",
-            "/auth/introspect",
-            "/auth/logout",
-            "/auth/refresh-token",
-            "/**",
-            "/home",
-            "/search/**",
-            "/auth/signup",
-            "/css/**",
-            "/js/**",
-            "/images/**",
+            "/auth/**",
+            "/api/**",
             "/ws/**",
-            "/login" // Thêm /login vào danh sách public endpoints
+            "/error"
     };
     private final String[] ADMIN_ENDPOINTS = {};
     private final String[] USER_ENDPOINTS = {};

@@ -1,40 +1,45 @@
 package com.phithang.mysocialnetwork.controller;
 
-import jakarta.servlet.http.HttpSession;
+import com.phithang.mysocialnetwork.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
+@RequestMapping("/api")
 @Slf4j
 public class HomeController {
 
     @GetMapping("/")
-    public String login() {
-        return "login";
+    public ResponseEntity<ApiResponse<String>> root() {
+        return ResponseEntity.ok(new ApiResponse<>(200, "MySocialNetwork API is running", "Welcome to MySocialNetwork API"));
     }
+
     @GetMapping("/login")
-    public String login2() {
-        return "login";
+    public ResponseEntity<ApiResponse<String>> login() {
+        return ResponseEntity.ok(new ApiResponse<>(200, "Login endpoint", "Please use /auth/login for authentication"));
     }
 
     @GetMapping("/home")
-    public String home() {
-        return "home";
+    public ResponseEntity<ApiResponse<String>> home() {
+        return ResponseEntity.ok(new ApiResponse<>(200, "Home endpoint", "Welcome to home"));
     }
 
     @GetMapping("/profile")
-    public String profile() {
-        return "profile";
+    public ResponseEntity<ApiResponse<String>> profile() {
+        return ResponseEntity.ok(new ApiResponse<>(200, "Profile endpoint", "Profile information"));
     }
 
     @GetMapping("/search/{name}")
-    public String search() {
-        return "listuser";
+    public ResponseEntity<ApiResponse<String>> search(@PathVariable String name) {
+        return ResponseEntity.ok(new ApiResponse<>(200, "Search results for: " + name, "Search functionality"));
     }
 
-    @GetMapping("/{id}")
-    public String user() {
-        return "user";
+    @GetMapping("/user/{id}")
+    public ResponseEntity<ApiResponse<String>> user(@PathVariable String id) {
+        return ResponseEntity.ok(new ApiResponse<>(200, "User ID: " + id, "User information"));
     }
 }
