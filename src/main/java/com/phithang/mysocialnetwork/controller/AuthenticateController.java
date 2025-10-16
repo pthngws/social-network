@@ -14,9 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -89,20 +86,6 @@ public class AuthenticateController {
                 .body(new ApiResponse<>(400, null, "Invalid OTP or email"));
     }
 
-    @GetMapping("/oauth2-login")
-    public ResponseEntity<ApiResponse<UserDto>> oauth2Login(
-            @AuthenticationPrincipal OidcUser oidcUser,
-            @AuthenticationPrincipal OAuth2User oAuth2User,
-            HttpServletResponse response) throws JOSEException {
-        UserDto userDto = authenticateService.oauth2Login(oidcUser, oAuth2User);
-        if (userDto != null) {
-            setRefreshTokenCookie(response, userDto.getRefreshToken());
-            userDto.setRefreshToken(null); // Không trả refreshToken trong JSON
-            return ResponseEntity.ok(new ApiResponse<>(200, userDto, "OAuth login successful"));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), null, "OAuth login failed"));
-    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestParam String email) {
@@ -168,4 +151,5 @@ public class AuthenticateController {
                     .body(new ApiResponse<>(401, null, "Unable to revoke token: " + e.getMessage()));
         }
     }
+
 }
