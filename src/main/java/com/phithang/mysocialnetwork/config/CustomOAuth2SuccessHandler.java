@@ -52,16 +52,21 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 response.setStatus(HttpServletResponse.SC_OK);
 
                 // Redirect về frontend với token trong URL
-                String redirectUrl = frontendUrl + "/login?oauth2=success&token=" + userDto.getToken();
+                String redirectUrl = getBaseUrl() + "/login?oauth2=success&token=" + userDto.getToken();
                 response.sendRedirect(redirectUrl);
             } else {
-                response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
+                response.sendRedirect(getBaseUrl() + "/login?error=oauth_failed");
             }
         } catch (JOSEException e) {
-            response.sendRedirect(frontendUrl + "/login?error=token_generation_failed");
+            response.sendRedirect(getBaseUrl() + "/login?error=token_generation_failed");
         } catch (Exception e) {
-            response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
+            response.sendRedirect(getBaseUrl() + "/login?error=oauth_failed");
         }
+    }
+
+    private String getBaseUrl() {
+        return frontendUrl.endsWith("/login") ? 
+            frontendUrl.substring(0, frontendUrl.length() - 6) : frontendUrl;
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {

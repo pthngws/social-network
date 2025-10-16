@@ -6,9 +6,7 @@ import com.phithang.mysocialnetwork.dto.request.IntrospectRequest;
 import com.phithang.mysocialnetwork.dto.request.LoginRequest;
 import com.phithang.mysocialnetwork.dto.request.SignupRequest;
 import com.phithang.mysocialnetwork.dto.response.ApiResponse;
-import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
-import com.phithang.mysocialnetwork.service.IUserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +19,6 @@ import java.text.ParseException;
 @RestController
 @RequestMapping("/auth")
 public class AuthenticateController {
-
-    @Autowired
-    private IUserService userService;
 
     @Autowired
     private IAuthenticateService authenticateService;
@@ -64,17 +59,22 @@ public class AuthenticateController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signup(@RequestBody SignupRequest signupDto) {
-        UserEntity userEntity = userService.findUserByEmail(signupDto.getEmail());
-        if (userEntity != null) {
+        try {
+            if (authenticateService.saveUser(signupDto)) {
+                try {
+                    authenticateService.sendOtpForSignup(signupDto.getEmail());
+                    return ResponseEntity.ok(new ApiResponse<>(200, null, "Signup successful. Please check your email for OTP."));
+                } catch (Exception emailException) {
+                    // Nếu gửi email thất bại, vẫn trả về success nhưng với message khác
+                    return ResponseEntity.ok(new ApiResponse<>(200, null, "Signup successful. However, there was an issue sending the OTP email. Please contact support."));
+                }
+            }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(400, null, "Email already in use"));
+                    .body(new ApiResponse<>(400, null, "Invalid email or password"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, null, e.getMessage()));
         }
-        if (authenticateService.saveUser(signupDto)) {
-            authenticateService.sendOtpForSignup(signupDto.getEmail());
-            return ResponseEntity.ok(new ApiResponse<>(200, null, "Signup successful. Please check your email for OTP."));
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse<>(400, null, "Invalid email or password"));
     }
 
     @PostMapping("/verify-otp")

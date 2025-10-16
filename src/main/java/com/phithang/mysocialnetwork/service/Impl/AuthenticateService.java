@@ -5,7 +5,6 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.phithang.mysocialnetwork.dto.RefreshTokenDto;
 import com.phithang.mysocialnetwork.dto.request.IntrospectRequest;
 import com.phithang.mysocialnetwork.dto.request.LoginRequest;
 import com.phithang.mysocialnetwork.dto.request.SignupRequest;
@@ -13,10 +12,10 @@ import com.phithang.mysocialnetwork.dto.UserDto;
 import com.phithang.mysocialnetwork.entity.UserEntity;
 import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.exception.ErrorCode;
-import com.phithang.mysocialnetwork.repository.UserRepository;
 import com.phithang.mysocialnetwork.service.IAuthenticateService;
 import com.phithang.mysocialnetwork.service.IUserService;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +33,7 @@ import java.util.Date;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AuthenticateService implements IAuthenticateService {
 
     @NonFinal
@@ -209,6 +209,7 @@ public class AuthenticateService implements IAuthenticateService {
         try {
             otpService.sendOtpEmail(email, otp);
         } catch (Exception e) {
+            log.error("Failed to send OTP email to {}: {}", email, e.getMessage());
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }

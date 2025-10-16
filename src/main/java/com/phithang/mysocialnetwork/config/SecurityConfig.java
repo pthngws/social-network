@@ -72,7 +72,9 @@ public class SecurityConfig {
                         )
                         .successHandler(customOAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            response.sendRedirect(frontendUrl + "/login?error=true");
+                            String baseUrl = frontendUrl.endsWith("/login") ? 
+                                frontendUrl.substring(0, frontendUrl.length() - 6) : frontendUrl;
+                            response.sendRedirect(baseUrl + "/login?error=true");
                         })
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
