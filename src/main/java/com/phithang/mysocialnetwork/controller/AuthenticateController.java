@@ -152,4 +152,29 @@ public class AuthenticateController {
         }
     }
 
+    @GetMapping("/verify")
+    public ResponseEntity<ApiResponse<String>> verifyToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, null, "No valid token provided"));
+            }
+            
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            IntrospectRequest introspectRequest = new IntrospectRequest();
+            introspectRequest.setToken(token);
+            String email = authenticateService.introspectToken(introspectRequest);
+            
+            if (email != null) {
+                return ResponseEntity.ok(new ApiResponse<>(200, email, "Token is valid"));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, null, "Invalid token"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(401, null, "Token verification failed: " + e.getMessage()));
+        }
+    }
+
 }
