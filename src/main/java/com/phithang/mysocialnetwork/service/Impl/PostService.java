@@ -11,6 +11,8 @@ import com.phithang.mysocialnetwork.exception.ErrorCode;
 import com.phithang.mysocialnetwork.repository.*;
 import com.phithang.mysocialnetwork.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -371,10 +373,12 @@ public class PostService implements IPostService {
         return convertToPostDtos(postRepository.findAllByAuthor(user), email);
     }
 
-    @Override
-    public List<PostDto> getAllPostDtos() {
-        return convertToPostDtos(postRepository.findAll(), getCurrentUserEmail());
+    public Page<PostDto> getAllPostDtos(Pageable pageable) {
+        Page<PostEntity> posts = postRepository.findAll(pageable);
+        String currentUserEmail = getCurrentUserEmail();
+        return posts.map(post -> buildPostDto(post, currentUserEmail));
     }
+
 
     private List<PostDto> convertToPostDtos(List<PostEntity> posts, String currentUserEmail) {
         return posts.stream()

@@ -253,8 +253,10 @@ public class StoryService implements IStoryService {
         List<Story> storyList = storyRepository.findAll();
         List<StoryResponseDto> storyResponseDtoList = new ArrayList<>();
         for (Story story : storyList) {
-            StoryResponseDto dto = mapToStoryResponseDto(story);
-            storyResponseDtoList.add(dto);
+            if(story.getExpiresAt().isAfter(LocalDateTime.now())) {
+                StoryResponseDto dto = mapToStoryResponseDto(story);
+                storyResponseDtoList.add(dto);
+            }
         }
         return storyResponseDtoList;
     }

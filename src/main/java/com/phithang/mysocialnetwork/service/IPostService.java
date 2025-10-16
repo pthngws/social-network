@@ -5,6 +5,8 @@ import com.phithang.mysocialnetwork.dto.PostDto;
 import com.phithang.mysocialnetwork.dto.request.PostRequest;
 import com.phithang.mysocialnetwork.dto.request.PostUpdateRequest;
 import com.phithang.mysocialnetwork.entity.PostEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +31,7 @@ public interface IPostService {
 
     List<PostDto> getMyPostDtos();
 
-    List<PostDto> getAllPostDtos();
+    Page<PostDto> getAllPostDtos(Pageable pageable);
 
     List<PostDto> getUserPostsDto(Long userId);
 

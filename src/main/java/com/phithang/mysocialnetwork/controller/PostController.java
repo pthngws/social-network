@@ -14,6 +14,10 @@ import com.phithang.mysocialnetwork.service.ICommentService;
 import com.phithang.mysocialnetwork.service.IPostService;
 import com.phithang.mysocialnetwork.service.IReportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,8 +54,10 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<ApiResponse<List<PostDto>>> getPosts() {
-        List<PostDto> allPosts = postService.getAllPostDtos();
+    public ResponseEntity<ApiResponse<Page<PostDto>>> getPosts(@RequestParam(defaultValue = "0") int page,
+                                                               @RequestParam(defaultValue = "3") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+        Page<PostDto> allPosts = postService.getAllPostDtos(pageable);
         return ResponseEntity.ok(new ApiResponse<>(200, allPosts, "Get all posts successful!"));
     }
 
