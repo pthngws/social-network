@@ -2,15 +2,18 @@ package com.phithang.mysocialnetwork.service.Impl;
 
 import com.phithang.mysocialnetwork.exception.AppException;
 import com.phithang.mysocialnetwork.exception.ErrorCode;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
-
+import org.springframework.mail.javamail.MimeMessageHelper;
 @Service
 public class OtpService {
 
@@ -31,13 +34,36 @@ public class OtpService {
     }
 
     public void sendOtpEmail(String email, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Xác nhận OTP đăng ký");
-        message.setText("Mã OTP của bạn là: " + otp + ". Mã này có hiệu lực trong 5 phút.");
         try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(email);
+            helper.setSubject("Xác nhận OTP đăng ký tài khoản");
+
+            String htmlContent = """
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; background: #f9f9f9; 
+                        border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h2 style="color: #4CAF50; text-align: center;">Xác nhận đăng ký tài khoản</h2>
+                <p style="font-size: 15px; color: #333;">Xin chào,</p>
+                <p style="font-size: 15px; color: #333;">
+                    Đây là mã OTP để xác nhận đăng ký tài khoản của bạn:
+                </p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <span style="font-size: 28px; font-weight: bold; color: #4CAF50;">%s</span>
+                </div>
+                <p style="font-size: 14px; color: #555;">Mã này có hiệu lực trong <b>5 phút</b>.</p>
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                <p style="font-size: 13px; color: #888; text-align: center;">
+                    Nếu bạn không yêu cầu, vui lòng bỏ qua email này.
+                </p>
+            </div>
+        """.formatted(otp);
+
+            helper.setText(htmlContent, true); // true = gửi dạng HTML
             mailSender.send(message);
-        } catch (Exception e) {
+
+        } catch (MessagingException e) {
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
