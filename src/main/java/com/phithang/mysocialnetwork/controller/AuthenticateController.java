@@ -34,10 +34,13 @@ public class AuthenticateController {
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);   // Chỉ gửi qua HTTPS (bỏ qua nếu dùng localhost HTTP)
+        cookie.setSecure(false);   // Set false để hỗ trợ localhost HTTP
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addCookie(cookie);
+        // Thêm SameSite=None để hỗ trợ cross-origin
+        response.addHeader("Set-Cookie", 
+            String.format("refreshToken=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=None; Secure=false", 
+                refreshToken, 7 * 24 * 60 * 60));
     }
 
     @PostMapping("/login")
@@ -156,12 +159,9 @@ public class AuthenticateController {
     public ResponseEntity<ApiResponse<Void>> revokeToken(HttpServletResponse response) {
         try {
             authenticateService.revokeRefreshToken();
-            Cookie cookie = new Cookie("refreshToken", null);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(0); // Xóa cookie
-            response.addCookie(cookie);
+            // Xóa cookie với SameSite=None để hỗ trợ cross-origin
+            response.addHeader("Set-Cookie", 
+                "refreshToken=; Path=/; Max-Age=0; HttpOnly; SameSite=None; Secure=false");
             return ResponseEntity.ok(new ApiResponse<>(200, null, "Refresh token revoked successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

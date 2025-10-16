@@ -32,6 +32,9 @@ public class SecurityConfig {
     @Value("${jwt.secret}")
     protected String jwtSecret;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     @Bean
     JwtDecoder jwtDecoder() {
         SecretKeySpec secretKey = new SecretKeySpec(jwtSecret.getBytes(), "HS512");
@@ -64,10 +67,10 @@ public class SecurityConfig {
                                 .userService(new CustomOAuth2UserService())
                         )
                         .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("http://localhost:5173/login?oauth2=success");
+                            response.sendRedirect(frontendUrl + "/login?oauth2=success");
                         })
                         .failureHandler((request, response, exception) -> {
-                            response.sendRedirect("http://localhost:5173/login?error=true");
+                            response.sendRedirect(frontendUrl + "/login?error=true");
                         })
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -83,15 +86,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:5173",
-                "http://localhost:8080",
+                "http://localhost:*",
+                "https://localhost:*",
+                "https://*.onrender.com",
                 "https://accounts.google.com",
                 "https://www.googleapis.com"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "Cache-Control", "Set-Cookie"));
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
